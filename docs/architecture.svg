@@ -1,0 +1,177 @@
+<svg viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', system-ui, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arr-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#ff6b6b"/>
+    </marker>
+    <marker id="arr-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#3fb950"/>
+    </marker>
+    <marker id="arr-orange" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#e3b341"/>
+    </marker>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="560" fill="#0d1117" rx="12"/>
+  <rect x="1" y="1" width="898" height="558" fill="none" stroke="#30363d" stroke-width="1" rx="12"/>
+
+  <!-- Title -->
+  <text x="450" y="34" text-anchor="middle" fill="#f0f6fc" font-size="16" font-weight="700" letter-spacing="2">CEREBUS — SYSTEM ARCHITECTURE</text>
+  <text x="450" y="52" text-anchor="middle" fill="#8b949e" font-size="10" letter-spacing="1">Dual LLM Guardrail · DevsHouse '26 · VIT Chennai</text>
+  <line x1="60" y1="62" x2="840" y2="62" stroke="#30363d" stroke-width="1"/>
+
+  <!-- ── COLUMN 1: Frontend ── -->
+  <!-- Chat UI :3000 -->
+  <rect x="30" y="90" width="130" height="60" rx="8" fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="95" y="114" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="600">💬 Chat UI</text>
+  <text x="95" y="130" text-anchor="middle" fill="#8b949e" font-size="9">localhost:3000/chat</text>
+  <text x="95" y="143" text-anchor="middle" fill="#30363d" font-size="8">Ollama · Groq · Auth</text>
+
+  <!-- Dashboard :3000 -->
+  <rect x="30" y="175" width="130" height="60" rx="8" fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="95" y="199" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="600">📊 Dashboard</text>
+  <text x="95" y="215" text-anchor="middle" fill="#8b949e" font-size="9">localhost:3000/dash</text>
+  <text x="95" y="228" text-anchor="middle" fill="#30363d" font-size="8">D3.js · Chart.js</text>
+
+  <!-- Monitor :3000 -->
+  <rect x="30" y="260" width="130" height="60" rx="8" fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="95" y="284" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="600">🔬 Monitor</text>
+  <text x="95" y="300" text-anchor="middle" fill="#8b949e" font-size="9">localhost:3000/mon</text>
+  <text x="95" y="313" text-anchor="middle" fill="#30363d" font-size="8">Self-learn live view</text>
+
+  <!-- Frontend label -->
+  <text x="95" y="345" text-anchor="middle" fill="#30363d" font-size="9" font-weight="600" letter-spacing="1">FRONTEND · :3000</text>
+
+  <!-- ── COLUMN 2: Orchestrator ── -->
+  <rect x="225" y="115" width="145" height="185" rx="8" fill="#161b22" stroke="#e3b341" stroke-width="1.5"/>
+  <text x="297" y="140" text-anchor="middle" fill="#e3b341" font-size="11" font-weight="700">⚡ ORCHESTRATOR</text>
+  <text x="297" y="156" text-anchor="middle" fill="#8b949e" font-size="9">localhost:8000</text>
+  <line x1="240" y1="163" x2="355" y2="163" stroke="#30363d" stroke-width="1"/>
+  <text x="297" y="178" text-anchor="middle" fill="#8b949e" font-size="9">POST /chat</text>
+  <text x="297" y="193" text-anchor="middle" fill="#8b949e" font-size="9">Rate limit (Redis)</text>
+  <text x="297" y="208" text-anchor="middle" fill="#8b949e" font-size="9">LLM 2nd-opinion review</text>
+  <text x="297" y="223" text-anchor="middle" fill="#8b949e" font-size="9">Session routing</text>
+  <text x="297" y="238" text-anchor="middle" fill="#8b949e" font-size="9">Audit logging</text>
+  <text x="297" y="253" text-anchor="middle" fill="#8b949e" font-size="9">GET /logs  ·  /stats</text>
+  <text x="297" y="268" text-anchor="middle" fill="#e3b341" font-size="8">Admin key protected</text>
+  <text x="297" y="283" text-anchor="middle" fill="#8b949e" font-size="8">→ Self-learn notify</text>
+
+  <!-- ── COLUMN 3: Guardrails ── -->
+  <!-- Input Guardrail -->
+  <rect x="440" y="80" width="155" height="115" rx="8" fill="#161b22" stroke="#ff6b6b" stroke-width="1.5"/>
+  <text x="517" y="102" text-anchor="middle" fill="#ff6b6b" font-size="11" font-weight="700">🛡 INPUT GUARDRAIL</text>
+  <text x="517" y="117" text-anchor="middle" fill="#8b949e" font-size="9">localhost:8001  ·  /analyze</text>
+  <line x1="455" y1="124" x2="580" y2="124" stroke="#30363d" stroke-width="1"/>
+  <text x="517" y="138" text-anchor="middle" fill="#8b949e" font-size="9">DistilBERT + LoRA</text>
+  <text x="517" y="152" text-anchor="middle" fill="#8b949e" font-size="9">Pattern heuristics (60+ rules)</text>
+  <text x="517" y="166" text-anchor="middle" fill="#8b949e" font-size="9">Multi-turn detection</text>
+  <text x="517" y="180" text-anchor="middle" fill="#8b949e" font-size="9">Threat vector boost</text>
+
+  <!-- Output Guardrail -->
+  <rect x="440" y="380" width="155" height="115" rx="8" fill="#161b22" stroke="#ff6b6b" stroke-width="1.5"/>
+  <text x="517" y="402" text-anchor="middle" fill="#ff6b6b" font-size="11" font-weight="700">🛡 OUTPUT GUARDRAIL</text>
+  <text x="517" y="417" text-anchor="middle" fill="#8b949e" font-size="9">localhost:8002  ·  /check</text>
+  <line x1="455" y1="424" x2="580" y2="424" stroke="#30363d" stroke-width="1"/>
+  <text x="517" y="438" text-anchor="middle" fill="#8b949e" font-size="9">Toxicity (Detoxify)</text>
+  <text x="517" y="452" text-anchor="middle" fill="#8b949e" font-size="9">PII leak detection</text>
+  <text x="517" y="466" text-anchor="middle" fill="#8b949e" font-size="9">Hallucination (BART NLI)</text>
+  <text x="517" y="480" text-anchor="middle" fill="#8b949e" font-size="9">Bias pattern check</text>
+
+  <!-- ── COLUMN 4: Services ── -->
+  <!-- Core LLM -->
+  <rect x="665" y="80" width="145" height="95" rx="8" fill="#161b22" stroke="#bc8cff" stroke-width="1.5"/>
+  <text x="737" y="103" text-anchor="middle" fill="#bc8cff" font-size="11" font-weight="700">🤖 CORE LLM</text>
+  <text x="737" y="118" text-anchor="middle" fill="#8b949e" font-size="9">localhost:8003  ·  /generate</text>
+  <line x1="680" y1="125" x2="795" y2="125" stroke="#30363d" stroke-width="1"/>
+  <text x="737" y="139" text-anchor="middle" fill="#8b949e" font-size="9">Ollama (llama3.2)</text>
+  <text x="737" y="153" text-anchor="middle" fill="#8b949e" font-size="9">Groq API (llama-3.3-70b)</text>
+  <text x="737" y="167" text-anchor="middle" fill="#8b949e" font-size="9">RAG context injection</text>
+
+  <!-- RAG -->
+  <rect x="665" y="200" width="145" height="85" rx="8" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="737" y="222" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="700">📚 RAG SERVICE</text>
+  <text x="737" y="237" text-anchor="middle" fill="#8b949e" font-size="9">localhost:8004  ·  /retrieve</text>
+  <line x1="680" y1="244" x2="795" y2="244" stroke="#30363d" stroke-width="1"/>
+  <text x="737" y="258" text-anchor="middle" fill="#8b949e" font-size="9">FAISS vector search</text>
+  <text x="737" y="272" text-anchor="middle" fill="#8b949e" font-size="9">MiniLM-L6-v2 embeddings</text>
+
+  <!-- Self-Learning -->
+  <rect x="665" y="315" width="145" height="100" rx="8" fill="#161b22" stroke="#f78166" stroke-width="1.5"/>
+  <text x="737" y="337" text-anchor="middle" fill="#f78166" font-size="11" font-weight="700">🧠 SELF-LEARNING</text>
+  <text x="737" y="352" text-anchor="middle" fill="#8b949e" font-size="9">localhost:8005  ·  /learn</text>
+  <line x1="680" y1="359" x2="795" y2="359" stroke="#30363d" stroke-width="1"/>
+  <text x="737" y="373" text-anchor="middle" fill="#8b949e" font-size="9">Heretic-inspired vectors</text>
+  <text x="737" y="387" text-anchor="middle" fill="#8b949e" font-size="9">TF-IDF n-gram rules</text>
+  <text x="737" y="401" text-anchor="middle" fill="#8b949e" font-size="9">DistilBERT retraining</text>
+
+  <!-- Redis + SQLite bottom row -->
+  <rect x="225" y="360" width="145" height="55" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="297" y="381" text-anchor="middle" fill="#8b949e" font-size="11" font-weight="600">🗄 Redis  :6379</text>
+  <text x="297" y="397" text-anchor="middle" fill="#30363d" font-size="9">Rate limit · Session state</text>
+  <text x="297" y="410" text-anchor="middle" fill="#30363d" font-size="9">Sliding window counter</text>
+
+  <rect x="225" y="435" width="145" height="55" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="297" y="456" text-anchor="middle" fill="#8b949e" font-size="11" font-weight="600">📁 SQLite Logs</text>
+  <text x="297" y="472" text-anchor="middle" fill="#30363d" font-size="9">SHA-256 hashed prompts</text>
+  <text x="297" y="485" text-anchor="middle" fill="#30363d" font-size="9">Full audit trail</text>
+
+  <!-- ── ARROWS ── -->
+  <!-- Frontend → Orchestrator -->
+  <line x1="160" y1="120" x2="222" y2="175" stroke="#58a6ff" stroke-width="1.3" marker-end="url(#arr)"/>
+  <line x1="160" y1="205" x2="222" y2="205" stroke="#58a6ff" stroke-width="1.3" marker-end="url(#arr)"/>
+  <line x1="160" y1="290" x2="222" y2="380" stroke="#58a6ff" stroke-width="1.3" marker-end="url(#arr)"/>
+
+  <!-- Orchestrator → Input Guardrail -->
+  <line x1="370" y1="160" x2="437" y2="135" stroke="#e3b341" stroke-width="1.5" marker-end="url(#arr-orange)"/>
+
+  <!-- Input Guardrail → Core LLM (safe path) -->
+  <line x1="595" y1="120" x2="662" y2="120" stroke="#3fb950" stroke-width="1.3" marker-end="url(#arr-green)"/>
+  <text x="625" y="113" text-anchor="middle" fill="#3fb950" font-size="8">SAFE</text>
+
+  <!-- Core LLM ↔ RAG -->
+  <line x1="737" y1="175" x2="737" y2="197" stroke="#8b949e" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- Core LLM → Output Guardrail -->
+  <line x1="665" y1="155" x2="597" y2="392" stroke="#bc8cff" stroke-width="1.3" marker-end="url(#arr)"/>
+
+  <!-- Output Guardrail → Orchestrator (response) -->
+  <line x1="440" y1="430" x2="373" y2="255" stroke="#3fb950" stroke-width="1.3" stroke-dasharray="5 3" marker-end="url(#arr-green)"/>
+
+  <!-- Orchestrator → Self-Learn (fire-and-forget) -->
+  <line x1="370" y1="240" x2="660" y2="355" stroke="#f78166" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arr)"/>
+  <text x="530" y="285" text-anchor="middle" fill="#f78166" font-size="8" transform="rotate(-25,530,285)">fire &amp; forget</text>
+
+  <!-- Self-learning → Input Guardrail (pattern feedback) -->
+  <path d="M665,340 C630,270 620,200 595,155" fill="none" stroke="#f78166" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#arr)"/>
+  <text x="610" y="245" text-anchor="middle" fill="#f78166" font-size="8" transform="rotate(-75,610,245)">learned patterns</text>
+
+  <!-- Block arrow -->
+  <line x1="517" y1="80" x2="517" y2="68" stroke="#ff6b6b" stroke-width="1.2" marker-end="url(#arr-red)"/>
+  <rect x="455" y="48" width="125" height="18" rx="4" fill="#2a0c0c" stroke="#ff6b6b" stroke-width="1"/>
+  <text x="517" y="61" text-anchor="middle" fill="#ff6b6b" font-size="9" font-weight="600">BLOCKED → User</text>
+
+  <!-- Ollama external -->
+  <rect x="665" y="450" width="145" height="45" rx="8" fill="#0d1117" stroke="#30363d" stroke-width="1" stroke-dasharray="4 2"/>
+  <text x="737" y="470" text-anchor="middle" fill="#30363d" font-size="10" font-weight="600">Ollama :11434</text>
+  <text x="737" y="485" text-anchor="middle" fill="#30363d" font-size="8">llama3.2 / local</text>
+  <line x1="737" y1="175" x2="737" y2="448" stroke="#30363d" stroke-width="1" stroke-dasharray="3 4"/>
+
+  <!-- Legend -->
+  <rect x="30" y="500" width="840" height="45" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <circle cx="55" cy="522" r="4" fill="#58a6ff"/><text x="65" y="526" fill="#8b949e" font-size="9">Frontend</text>
+  <circle cx="130" cy="522" r="4" fill="#e3b341"/><text x="140" y="526" fill="#8b949e" font-size="9">Orchestrator</text>
+  <circle cx="220" cy="522" r="4" fill="#ff6b6b"/><text x="230" y="526" fill="#8b949e" font-size="9">Guardrails</text>
+  <circle cx="305" cy="522" r="4" fill="#bc8cff"/><text x="315" y="526" fill="#8b949e" font-size="9">Core LLM</text>
+  <circle cx="385" cy="522" r="4" fill="#3fb950"/><text x="395" y="526" fill="#8b949e" font-size="9">RAG</text>
+  <circle cx="440" cy="522" r="4" fill="#f78166"/><text x="450" y="526" fill="#8b949e" font-size="9">Self-Learning</text>
+  <line x1="540" y1="518" x2="560" y2="518" stroke="#3fb950" stroke-width="1.5"/><text x="565" y="522" fill="#8b949e" font-size="9">Safe path</text>
+  <line x1="640" y1="518" x2="660" y2="518" stroke="#ff6b6b" stroke-width="1.5"/><text x="665" y="522" fill="#8b949e" font-size="9">Block path</text>
+  <line x1="730" y1="518" x2="750" y2="518" stroke="#f78166" stroke-width="1" stroke-dasharray="3 2"/><text x="755" y="522" fill="#8b949e" font-size="9">Async/fire-forget</text>
+</svg>

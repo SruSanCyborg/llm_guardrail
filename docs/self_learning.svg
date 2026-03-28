@@ -1,0 +1,92 @@
+<svg viewBox="0 0 820 520" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', system-ui, sans-serif">
+  <defs>
+    <marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#58a6ff"/>
+    </marker>
+    <marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#f78166"/>
+    </marker>
+    <marker id="ag" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#3fb950"/>
+    </marker>
+    <marker id="ap" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#bc8cff"/>
+    </marker>
+  </defs>
+
+  <rect width="820" height="520" fill="#0d1117" rx="12"/>
+  <rect x="1" y="1" width="818" height="518" fill="none" stroke="#30363d" stroke-width="1" rx="12"/>
+
+  <text x="410" y="34" text-anchor="middle" fill="#f0f6fc" font-size="15" font-weight="700" letter-spacing="2">SELF-LEARNING ENGINE — HERETIC-INSPIRED</text>
+  <text x="410" y="52" text-anchor="middle" fill="#8b949e" font-size="10">Cerebus learns from every attack. Inspired by: github.com/p-e-w/heretic</text>
+  <line x1="40" y1="62" x2="780" y2="62" stroke="#30363d" stroke-width="1"/>
+
+  <!-- Center: Attack Event -->
+  <rect x="300" y="82" width="220" height="58" rx="8" fill="#2a0c0c" stroke="#ff6b6b" stroke-width="2"/>
+  <text x="410" y="105" text-anchor="middle" fill="#ff6b6b" font-size="13" font-weight="700">🚨 Attack Detected</text>
+  <text x="410" y="121" text-anchor="middle" fill="#8b949e" font-size="9">prompt  ·  label  ·  confidence</text>
+  <text x="410" y="134" text-anchor="middle" fill="#8b949e" font-size="9">Orchestrator → POST /learn</text>
+
+  <!-- 3 parallel branches -->
+  <!-- Branch 1: Pattern Extraction -->
+  <line x1="300" y1="111" x2="180" y2="200" stroke="#f78166" stroke-width="1.4" marker-end="url(#ar)"/>
+  <rect x="40" y="200" width="280" height="105" rx="8" fill="#161b22" stroke="#f78166" stroke-width="1.5"/>
+  <text x="180" y="221" text-anchor="middle" fill="#f78166" font-size="11" font-weight="700">① Pattern Extraction</text>
+  <line x1="55" y1="228" x2="305" y2="228" stroke="#30363d" stroke-width="1"/>
+  <text x="55" y="244" fill="#8b949e" font-size="9">Tokenize attack text</text>
+  <text x="55" y="259" fill="#8b949e" font-size="9">Extract bigrams (min 4 chars/word)</text>
+  <text x="55" y="274" fill="#8b949e" font-size="9">Extract trigrams (min 3 chars/word)</text>
+  <text x="55" y="289" fill="#8b949e" font-size="9">→ Convert to regex: \bword.{0,15}word\b</text>
+  <text x="55" y="296" fill="#f78166" font-size="8">Save to learned_patterns.json</text>
+
+  <!-- Branch 2: Threat Vector -->
+  <line x1="410" y1="140" x2="410" y2="200" stroke="#f78166" stroke-width="1.4" marker-end="url(#ar)"/>
+  <rect x="265" y="200" width="290" height="115" rx="8" fill="#161b22" stroke="#bc8cff" stroke-width="1.5"/>
+  <text x="410" y="220" text-anchor="middle" fill="#bc8cff" font-size="11" font-weight="700">② Threat Direction Vector</text>
+  <text x="410" y="234" text-anchor="middle" fill="#8b949e" font-size="8" font-style="italic">(Heretic concept in reverse)</text>
+  <line x1="280" y1="240" x2="540" y2="240" stroke="#30363d" stroke-width="1"/>
+  <text x="280" y="256" fill="#8b949e" font-size="9">Embed prompt → sentence-transformers</text>
+  <text x="280" y="271" fill="#8b949e" font-size="9">Add to label's embedding list</text>
+  <text x="280" y="286" fill="#8b949e" font-size="9">Recompute centroid = mean(embeddings)</text>
+  <text x="280" y="301" fill="#8b949e" font-size="9">Normalize centroid vector</text>
+  <text x="280" y="308" fill="#bc8cff" font-size="8">Save to threat_vectors.pkl</text>
+
+  <!-- Branch 3: Retrain Queue -->
+  <line x1="520" y1="111" x2="640" y2="200" stroke="#f78166" stroke-width="1.4" marker-end="url(#ar)"/>
+  <rect x="500" y="200" width="280" height="95" rx="8" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="640" y="221" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="700">③ Retrain Queue</text>
+  <line x1="515" y1="228" x2="765" y2="228" stroke="#30363d" stroke-width="1"/>
+  <text x="515" y="244" fill="#8b949e" font-size="9">Append to retrain_queue.jsonl</text>
+  <text x="515" y="259" fill="#8b949e" font-size="9">Count queued examples</text>
+  <text x="515" y="274" fill="#8b949e" font-size="9">Threshold = 10 examples</text>
+  <text x="515" y="289" fill="#e3b341" font-size="9">Trigger DistilBERT fine-tune</text>
+
+  <!-- Convergence arrows down -->
+  <line x1="180" y1="305" x2="180" y2="360" stroke="#58a6ff" stroke-width="1.3" marker-end="url(#a)"/>
+  <line x1="410" y1="315" x2="410" y2="360" stroke="#58a6ff" stroke-width="1.3" marker-end="url(#a)"/>
+  <line x1="640" y1="295" x2="640" y2="360" stroke="#58a6ff" stroke-width="1.3" marker-end="url(#a)"/>
+
+  <!-- Feedback box -->
+  <rect x="40" y="360" width="740" height="65" rx="8" fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="410" y="381" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="700">④ Feedback to Input Guardrail  (next request)</text>
+  <line x1="55" y1="388" x2="765" y2="388" stroke="#30363d" stroke-width="1"/>
+  <text x="130" y="402" text-anchor="middle" fill="#8b949e" font-size="9">New regex patterns</text>
+  <text x="130" y="415" text-anchor="middle" fill="#f78166" font-size="8">→ pattern_scan()</text>
+  <text x="380" y="402" text-anchor="middle" fill="#8b949e" font-size="9">Cosine similarity boost</text>
+  <text x="380" y="415" text-anchor="middle" fill="#bc8cff" font-size="8">→ _vector_boost() +0.10 max</text>
+  <text x="640" y="402" text-anchor="middle" fill="#8b949e" font-size="9">Retrained model weights</text>
+  <text x="640" y="415" text-anchor="middle" fill="#3fb950" font-size="8">→ classifier.py reloads</text>
+
+  <!-- Heretic comparison box -->
+  <rect x="40" y="445" width="350" height="58" rx="7" fill="#0f0f1a" stroke="#30363d" stroke-width="1" stroke-dasharray="4 2"/>
+  <text x="215" y="465" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="600">Heretic (original)</text>
+  <text x="215" y="480" text-anchor="middle" fill="#30363d" font-size="9">Finds refusal direction → suppresses it</text>
+  <text x="215" y="494" text-anchor="middle" fill="#30363d" font-size="9">Goal: remove safety constraints from model</text>
+
+  <rect x="430" y="445" width="350" height="58" rx="7" fill="#0a1a0a" stroke="#3fb950" stroke-width="1" stroke-dasharray="4 2"/>
+  <text x="605" y="465" text-anchor="middle" fill="#3fb950" font-size="10" font-weight="600">Cerebus (reversed)</text>
+  <text x="605" y="480" text-anchor="middle" fill="#8b949e" font-size="9">Finds threat direction → detects similarity</text>
+  <text x="605" y="494" text-anchor="middle" fill="#8b949e" font-size="9">Goal: strengthen detection of attack patterns</text>
+
+  <text x="410" y="466" text-anchor="middle" fill="#e3b341" font-size="13" font-weight="700">vs</text>
+</svg>
