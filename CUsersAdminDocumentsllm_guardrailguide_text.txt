@@ -1,0 +1,425 @@
+CEREBUS
+Dual LLM Guardrail Architecture
+Complete Implementation & Study Guide
+Team
+Angenagatram#$
+Domain
+Open Innovation — AI Security
+Event
+DevsHouse '26 — GDG on Campus VIT Chennai
+Guide Version
+v1.0 — March 2026
+1. Project Overview & Goals
+Cerebus is a Dual LLM Guardrail Architecture that places a dedicated Security LLM as a gatekeeper in front of a primary Core LLM. Every user prompt is screened for prompt injections, jailbreak attempts, and sensitive data extraction before being allowed to reach the main model. Outputs from the Core LLM are then re-checked by an Output Guardrail before reaching the user.
+Why Cerebus?
+Traditional guardrails rely on static keyword lists and rule-based filters — both brittle against novel attack patterns. Cerebus uses AI to guard AI: a secondary model with adversarial awareness dynamically evaluates each request in context, enabling real-time, adaptive protection.
+1.1  Core Goals
+Block prompt injection, jailbreak, and sensitive data extraction attacks in real time
+Provide context-aware input AND output validation (dual guardrail)
+Be deployable as a microservice wrapper around any existing LLM
+Support enterprise-grade observability via security logs
+Keep latency overhead under 300 ms per request
+1.2  Architecture Summary
+The pipeline flows through five logical stages:
+User sends a prompt to the Orchestrator
+Input Guardrail (DistilBERT-based) screens for prompt injection, jailbreak, and PII/sensitive data
+If SAFE → forwarded to Primary LLM (with optional RAG Knowledge Base)
+Output Guardrail (lightweight LLM) screens response for toxicity, bias, hallucination, and data leaks
+If VALID → Final response delivered; otherwise → Block / Policy Message sent
+2. Concepts to Study (Pre-Implementation)
+Before writing a single line of code, make sure you understand the following topics. Estimated self-study time: 2–3 days for someone with ML basics.
+2.1  LLM Security Attacks
+Attack Type
+What You Need to Know
+Prompt Injection
+Attacker embeds instructions inside user data to override system prompts. Study direct vs indirect injection.
+Jailbreak Attacks
+Social-engineering patterns (DAN, role-play, base64 encoding) that bypass safety filters.
+Sensitive Data Extraction
+Prompts designed to leak training data, API keys, PII, or system-prompt contents.
+Indirect Injection
+Malicious instructions hidden inside documents, web pages, or tool outputs retrieved by the LLM.
+Model Inversion
+Inferring training data from repeated model queries — relevant for output validation.
+2.2  NLP & Model Concepts
+Transformer architecture basics (attention, tokenization, embeddings)
+DistilBERT: distilled BERT for fast text classification — this is your Input Guardrail backbone
+Fine-tuning vs LoRA (Low-Rank Adaptation): understand why LoRA is used for the Security LLM
+Retrieval-Augmented Generation (RAG): vector stores + semantic search for the Knowledge Base
+Hallucination detection: NLI-based approaches (e.g., SummaC, AlignScore)
+Toxicity & bias classification: Detoxify, Perspective API concepts
+2.3  System Design Concepts
+Microservice architecture: why split guardrail from core LLM into separate services
+API Gateway pattern: orchestrator as single entry point
+Redis pub/sub and caching: rate limiting and session context
+Docker & Kubernetes: containerisation, pods, health checks, horizontal scaling
+Async processing with FastAPI: how to keep latency low while calling two LLMs
+2.4  Recommended Free Learning Resources
+Topic
+Resource
+Link / Where to Find
+LLM Security / Prompt Injection
+OWASP LLM Top 10 (2025)
+owasp.org/www-project-top-10-for-large-language-model-applications
+DistilBERT Fine-tuning
+Hugging Face NLP Course (Free)
+huggingface.co/learn/nlp-course
+LoRA / PEFT
+HF PEFT Docs + Sebastian Raschka Blog
+huggingface.co/docs/peft
+RAG Fundamentals
+LangChain Docs + DeepLearning.AI Short Course
+python.langchain.com/docs/tutorials/rag
+FastAPI
+Official FastAPI Tutorial
+fastapi.tiangolo.com/tutorial
+Docker + Kubernetes
+Play with Docker (free lab)
+labs.play-with-docker.com
+Redis
+Redis University (free)
+university.redis.io
+Adversarial ML
+CleverHans + Foolbox GitHub repos
+github.com/cleverhans-lab/cleverhans
+3. Tools & Software Stack (Free-First)
+3.1  Development Environment
+Tool
+Purpose
+Free Tier / Notes
+VS Code
+Primary IDE
+100% free — microsoft.github.io/vscode
+Python 3.11+
+Core language
+Free — python.org
+Git + GitHub
+Version control
+Free for public/private repos
+Conda / venv
+Environment management
+Free — use conda or python -m venv
+Jupyter Notebooks
+Experimentation & prototyping
+Free — via Anaconda or pip install jupyter
+Postman (or Bruno)
+API testing
+Free tiers available — Bruno is fully open-source
+3.2  AI / ML Libraries
+Library
+Role in Cerebus
+Install Command
+transformers (HuggingFace)
+Load DistilBERT, tokenizers, pipelines
+pip install transformers
+peft
+LoRA fine-tuning of Security LLM
+pip install peft
+datasets
+Load adversarial prompt datasets
+pip install datasets
+torch (PyTorch)
+Model training & inference
+pip install torch (CPU) — see pytorch.org for GPU
+sentence-transformers
+Semantic embeddings for RAG
+pip install sentence-transformers
+faiss-cpu
+Vector store for RAG Knowledge Base
+pip install faiss-cpu
+langchain + langchain-community
+Orchestration, RAG chain, LLM wrappers
+pip install langchain langchain-community
+detoxify
+Toxicity detection in Output Guardrail
+pip install detoxify
+evaluate + rouge-score
+Hallucination scoring utilities
+pip install evaluate rouge-score
+3.3  Backend & Infrastructure
+Tool
+Role
+Free Tier / Notes
+FastAPI
+REST API framework for Orchestrator
+pip install fastapi uvicorn — fully free
+Redis (Docker image)
+Rate limiting, session caching, pub/sub
+docker pull redis — free open-source
+Docker Desktop
+Containerise each service
+Free for personal/educational use
+Docker Compose
+Multi-container local orchestration
+Included with Docker Desktop
+Minikube
+Local Kubernetes cluster for testing K8s config
+Free — minikube.sigs.k8s.io
+Prometheus + Grafana
+Metrics & security dashboard
+Both open-source and free
+SQLite / PostgreSQL
+Security logs storage
+SQLite is file-based and free; Postgres free on Railway
+3.4  Free LLM / Model Sources
+Model
+Use Case in Cerebus
+Access
+distilbert-base-uncased
+Input Guardrail base model
+HuggingFace Hub — free download
+mistralai/Mistral-7B-Instruct
+Core LLM (if running locally)
+HuggingFace Hub — free with gated access
+google/flan-t5-base
+Lightweight Output Guardrail LLM
+HuggingFace Hub — free
+Ollama (Llama 3 / Phi-3)
+Run LLMs fully locally, no API cost
+ollama.com — free open-source
+Groq API (free tier)
+Fast hosted inference for Core LLM
+console.groq.com — free tier available
+Google Gemini API
+Alternative hosted LLM
+aistudio.google.com — free tier
+3.5  Datasets for Training the Security LLM
+Dataset
+Source & Notes
+JailbreakBench (JBB-Behaviors)
+github.com/JailbreakBench — 100 harmful behaviors, free
+PromptBench adversarial prompts
+github.com/microsoft/promptbench — MIT license
+HarmBench
+github.com/centerforaisafety/HarmBench — standardised harmful request dataset
+Lakera PINT Benchmark
+Prompt injection dataset — lakera.ai/blog — free research use
+OpenAI Moderation dataset (Kaggle)
+Text classification for policy violations, freely downloadable
+4. Step-by-Step Implementation Roadmap
+Estimated Total Timeline
+With a 4-person team working part-time (4–5 hrs/day): 7–10 days to MVP. Full polish with K8s deployment: 14 days.
+Phase 1 — Project Setup (Day 1)
+Create a GitHub repo with the following folder structure:
+cerebus/
+  orchestrator/        # FastAPI entry point
+  input_guardrail/     # DistilBERT security classifier
+  output_guardrail/    # Lightweight LLM output checker
+  core_llm/            # Wrapper around primary LLM
+  rag/                 # RAG knowledge base service
+  security_logs/       # Log storage + query API
+  shared/              # Schemas, utils, config
+  docker-compose.yml   # Spin up all services
+  requirements.txt
+Set up a Python virtual environment and install core dependencies:
+python -m venv cerebus_env && source cerebus_env/bin/activate
+pip install fastapi uvicorn transformers peft torch langchain faiss-cpu
+pip install detoxify sentence-transformers redis pydantic
+Create a .env file for API keys and config — never hardcode secrets:
+CORE_LLM_PROVIDER=groq          # or ollama / gemini
+GROQ_API_KEY=your_key_here
+REDIS_URL=redis://localhost:6379
+LOG_DB_PATH=./security_logs/logs.db
+Phase 2 — Input Guardrail (Days 2–3)
+The Input Guardrail is the most critical component. It classifies each incoming prompt into one of four labels: SAFE, PROMPT_INJECTION, JAILBREAK, SENSITIVE_EXTRACTION.
+Step 2A — Build the Dataset
+Download JailbreakBench and Lakera PINT datasets
+Create a balanced CSV with columns: text, label (0=SAFE, 1=INJECTION, 2=JAILBREAK, 3=SENSITIVE)
+Add at least 200 SAFE examples (normal user queries) to avoid false positives
+Step 2B — Fine-tune DistilBERT with LoRA
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from peft import get_peft_model, LoraConfig, TaskType
+model = AutoModelForSequenceClassification.from_pretrained(
+    'distilbert-base-uncased', num_labels=4)
+lora_config = LoraConfig(
+    task_type=TaskType.SEQ_CLS, r=8, lora_alpha=32,
+    target_modules=['q_lin', 'v_lin'], lora_dropout=0.1)
+model = get_peft_model(model, lora_config)
+# Then train with HuggingFace Trainer API (see HF docs for full loop)
+Step 2C — Build the FastAPI Service
+# input_guardrail/main.py
+from fastapi import FastAPI
+from pydantic import BaseModel
+app = FastAPI()
+class PromptRequest(BaseModel):
+    prompt: str
+    session_id: str
+@app.post('/analyze')
+async def analyze(req: PromptRequest):
+    label, confidence = classifier(req.prompt)
+    return {'safe': label == 'SAFE', 'label': label, 'confidence': confidence}
+Phase 3 — Orchestrator (Day 4)
+The Orchestrator is the single entry point. It receives user requests, calls the Input Guardrail, routes to Core LLM if safe, and calls the Output Guardrail before responding.
+# orchestrator/main.py — simplified flow
+@app.post('/chat')
+async def chat(req: ChatRequest):
+    # Step 1: Input Guardrail check
+    guard_result = await http_client.post(INPUT_GUARDRAIL_URL, json={'prompt': req.prompt})
+    if not guard_result['safe']:
+        log_security_event(req, guard_result)
+        return {'response': 'Request blocked by security policy.', 'blocked': True}
+    # Step 2: Core LLM
+    llm_response = await call_core_llm(req.prompt)
+    # Step 3: Output Guardrail check
+    out_check = await http_client.post(OUTPUT_GUARDRAIL_URL, json={'response': llm_response})
+    if not out_check['valid']:
+        return {'response': 'Response filtered by safety policy.', 'blocked': True}
+    return {'response': llm_response, 'blocked': False}
+Phase 4 — Output Guardrail (Day 5)
+The Output Guardrail runs four parallel checks on the Core LLM response:
+Detector
+Implementation Approach
+Toxicity Detector
+Use the Detoxify library (pip install detoxify) — free, open-source
+Bias Detector
+Fine-tune a classifier on CrowS-Pairs dataset or use HF 'valurank/distilroberta-base-offensive-value-detector'
+Hallucination Detector
+Compare response claims against RAG source docs using NLI (facebook/bart-large-mnli)
+Data Leak Filter
+Regex + NER (spaCy) to detect PII: email, phone, SSN, credit card patterns
+Phase 5 — RAG Knowledge Base (Day 6)
+Prepare your domain-specific documents (PDFs, text files)
+Chunk documents into 512-token segments with 50-token overlap
+Generate embeddings using sentence-transformers (all-MiniLM-L6-v2 — free & fast)
+Store vectors in FAISS index (runs entirely locally, no API cost)
+At query time, retrieve top-K relevant chunks and inject as context into the Core LLM prompt
+from langchain_community.vectorstores import FAISS
+from langchain_huggingface import HuggingFaceEmbeddings
+embeddings = HuggingFaceEmbeddings(model_name='all-MiniLM-L6-v2')
+vectorstore = FAISS.from_documents(chunks, embeddings)
+retriever = vectorstore.as_retriever(search_kwargs={'k': 4})
+Phase 6 — Security Logging & Redis (Day 7)
+Use Redis for rate limiting: max 10 requests/minute per session_id using Redis sliding window counters
+Log all blocked requests to SQLite (development) or PostgreSQL (production) with: timestamp, session_id, prompt_hash (not plaintext), label, confidence, action_taken
+Expose a /logs endpoint (admin-only, API-key protected) for audit dashboards
+Optionally hook Prometheus metrics: requests_total, blocked_total, latency_histogram
+Phase 7 — Docker Compose & Deployment (Days 8–9)
+# docker-compose.yml (simplified)
+services:
+  orchestrator:
+    build: ./orchestrator
+    ports: ['8000:8000']
+    depends_on: [input_guardrail, output_guardrail, redis]
+  input_guardrail:
+    build: ./input_guardrail
+    ports: ['8001:8001']
+  output_guardrail:
+    build: ./output_guardrail
+    ports: ['8002:8002']
+  redis:
+    image: redis:7-alpine
+    ports: ['6379:6379']
+Run the entire stack locally with:  docker-compose up --build
+Phase 8 — Testing & Evaluation (Day 10)
+Test Type
+What to Test & How
+Unit Tests (pytest)
+Test each detector in isolation with known safe / attack prompts
+Integration Tests
+Send end-to-end requests via Postman or pytest + httpx
+Adversarial Red-teaming
+Use JailbreakBench eval harness to measure attack success rate (ASR)
+Latency Profiling
+Use locust (pip install locust) — target < 300ms p95 latency
+False Positive Rate
+Measure legitimate queries incorrectly blocked — target < 2%
+Output Validity
+Check that hallucination and data leak detectors fire correctly on synthetic test cases
+5. Complete Tech Stack Reference
+Layer
+Technology
+Why Chosen
+API Framework
+FastAPI (Python)
+Async, fast, automatic OpenAPI docs, free
+Input Guardrail
+DistilBERT + LoRA (HuggingFace)
+60% smaller than BERT, accurate, open-source
+Output Guardrail
+Flan-T5-Base / custom classifier
+Lightweight, runs on CPU, free
+Core LLM
+Groq (free tier) / Ollama (local)
+Zero-cost inference options
+RAG Vector Store
+FAISS + sentence-transformers
+Runs 100% locally, no API needed
+Orchestration
+LangChain
+Handles RAG chains, LLM wrappers, prompts
+Caching / Rate Limit
+Redis
+Sub-millisecond operations, free open-source
+Containerisation
+Docker + Docker Compose
+Reproducible, free for personal use
+Kubernetes (optional)
+Minikube (local) / GKE free tier
+For production scaling demos
+Security Logging
+SQLite (dev) / PostgreSQL
+Both free; SQLite needs zero setup
+Monitoring
+Prometheus + Grafana
+Both open-source; deep FastAPI integration
+Model Fine-tuning
+HuggingFace Trainer + PEFT
+Free GPU via Google Colab T4 or Kaggle
+6. Likely Judging Questions & Answers
+Tip for Presentation
+Judges at hackathons typically probe on three axes: technical depth, novelty vs existing work, and scalability. Prepare concise 2-sentence answers to each question below and practice them out loud.
+Q1: Why not just use Llama Guard or OpenAI Moderation API?
+These are single-layer, input-only solutions. Cerebus adds an Output Guardrail layer and can be fine-tuned on domain-specific adversarial datasets — e.g., medical or financial prompt patterns — whereas Llama Guard is a fixed general-purpose classifier. Cerebus also logs all blocked attempts for audit trails, which enterprise deployments require.
+Q2: What is the latency overhead of adding two extra LLM calls?
+DistilBERT inference on CPU runs in ~30–50 ms per request. The Output Guardrail using Flan-T5-Base adds ~80–120 ms. Total overhead is under 200 ms in 95th percentile, which is acceptable for most enterprise applications. Redis caching of seen-before prompt patterns can further reduce input guardrail latency to near zero for repeated prompts.
+Q3: How do you handle false positives — blocking legitimate prompts?
+The fine-tuned classifier outputs a confidence score. We set a threshold (e.g., confidence > 0.85) before blocking. Prompts in the 0.70–0.85 range are flagged for human review rather than hard-blocked. The SAFE class is deliberately over-represented (60%) in training data to minimise false positives. Feedback from flagged prompts is used to continuously retrain the guardrail model.
+Q4: Can this be bypassed with adversarial suffixes or encoded attacks?
+No system is 100% bypass-proof. Cerebus addresses this by training on adversarial datasets that include Base64, Pig Latin, and token-smuggling examples. The Output Guardrail provides a second opportunity to catch attacks that slip through the input layer. We also log all borderline cases for model improvement — this is an iterative defence, not a one-shot silver bullet.
+Q5: How does the RAG Knowledge Base interact with the security system?
+The RAG Knowledge Base is accessed only after the Input Guardrail passes the prompt as safe. Retrieved chunks are injected into the Core LLM's context. The Output Guardrail then uses those same retrieved chunks as ground truth to perform hallucination detection — if the model's response contradicts the source documents, it is flagged and blocked.
+7. Extensions & Future Enhancements
+Extension
+How to Implement
+Multi-modal guardrails
+Add image input screening using CLIP-based classifiers to detect harmful images passed to vision LLMs
+Agentic tool-call protection
+Extend orchestrator to intercept and validate tool-call arguments before execution
+Federated Security Logs
+Share threat intelligence (anonymised) across enterprise tenants using federated learning
+Adaptive threshold tuning
+Use Bayesian optimisation to auto-tune classification thresholds based on live false positive/negative rates
+SIEM integration
+Export security events to Splunk / ELK Stack via webhook for SOC dashboards
+Adversarial fine-tuning loop
+Automatically retrain the guardrail model weekly on newly observed blocked prompts
+8. Pre-Submission Checklist
+Before You Demo
+Run through every item below at least 2 hours before your demo slot to avoid last-minute surprises.
+Code & Functionality
+docker-compose up --build starts all services without errors
+Postman / curl test: normal prompt returns a valid response
+Postman / curl test: known jailbreak prompt returns a block message
+Postman / curl test: PII extraction attempt is blocked
+Security logs endpoint returns blocked request records
+Output guardrail correctly flags a planted toxic response
+Presentation
+Slide 1 (Problem): clear quantified pain point — x% of enterprise LLM deployments face adversarial attacks
+Slide 2 (Solution): Cerebus flowchart — show the dual-layer with Input + Output Guardrail
+Slide 3 (Demo): live or recorded demo of a jailbreak being blocked in real time
+Slide 4 (Uniqueness): comparison table — Cerebus vs Llama Guard vs OpenAI Moderation
+Slide 5 (Tech Stack): show all the free tools used — judges appreciate cost-consciousness
+Slide 6 (Future Work + Ask): what you'd build next with 3 more months
+Team Roles (recommended split)
+Member
+Primary Responsibility
+Sanjay Sivakumar (Lead)
+Orchestrator service, architecture design, presentation lead
+Prasun Kumar
+Input Guardrail model fine-tuning and API
+Shivam Pandey
+Output Guardrail + RAG Knowledge Base
+Chandramouli B
+Docker Compose, security logging, monitoring dashboard
+Build boldly. Ship securely.
+Team Angenagatram#$ — Vellore Institute of Technology, Chennai

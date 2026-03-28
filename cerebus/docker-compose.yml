@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  input_guardrail:
+    build: ./input_guardrail
+    ports:
+      - "8001:8001"
+    environment:
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./shared:/app/shared
+
+  output_guardrail:
+    build: ./output_guardrail
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./shared:/app/shared
+
+  core_llm:
+    build: ./core_llm
+    ports:
+      - "8003:8003"
+    environment:
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - OLLAMA_MODEL=llama3.2
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./shared:/app/shared
+
+  orchestrator:
+    build: ./orchestrator
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - INPUT_GUARDRAIL_URL=http://input_guardrail:8001
+      - OUTPUT_GUARDRAIL_URL=http://output_guardrail:8002
+      - CORE_LLM_URL=http://core_llm:8003
+      - LOG_DB_PATH=/app/security_logs/logs.db
+      - ADMIN_API_KEY=cerebus-admin-secret
+    depends_on:
+      - input_guardrail
+      - output_guardrail
+      - core_llm
+      - redis
+    volumes:
+      - ./shared:/app/shared
+      - ./security_logs:/app/security_logs

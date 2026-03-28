@@ -1,0 +1,19 @@
+# Virtual environments
+cerebus_env/
+venv/
+.venv/
+env/
+**/cerebus_env/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Large model/library files
+*.dll
+*.lib
+*.so
+*.pyd
+
+# OS
+.DS_Store
+Thumbs.db

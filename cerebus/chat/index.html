@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Cerebus AI — Secure Chat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#07090f; --surface:#0d1117; --card:#111827;
+  --border:#1f2937; --border-h:#374151;
+  --text:#f1f5f9; --muted:#6b7280; --dim:#374151;
+  --blue:#3b82f6; --blue-dark:#1d4ed8;
+  --red:#ef4444; --green:#22c55e; --purple:#8b5cf6;
+  --radius:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;overflow:hidden;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--border-h);border-radius:2px;}
+
+/* ── LOGIN ── */
+#loginPage{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;z-index:100;
+}
+.login-card{
+  width:380px;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:36px;
+}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;}
+.login-mark{
+  width:38px;height:38px;border-radius:10px;
+  background:linear-gradient(135deg,var(--blue-dark),var(--purple));
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.login-brand{font-size:18px;font-weight:700;}
+.login-brand span{color:var(--muted);font-weight:400;font-size:13px;display:block;margin-top:1px;}
+.login-title{font-size:20px;font-weight:600;margin-bottom:6px;}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.5;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:6px;letter-spacing:.3px;}
+.field input{
+  width:100%;padding:10px 12px;background:var(--surface);
+  border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-size:14px;font-family:'Inter',sans-serif;
+  transition:border-color .2s;
+}
+.field input:focus{outline:none;border-color:var(--blue);}
+.login-btn{
+  width:100%;padding:11px;background:var(--blue);border:none;border-radius:8px;
+  color:#fff;font-size:14px;font-weight:600;cursor:pointer;
+  transition:background .2s;margin-top:4px;letter-spacing:.2px;
+}
+.login-btn:hover{background:var(--blue-dark);}
+.login-err{font-size:12px;color:var(--red);margin-top:10px;display:none;}
+.login-users{
+  margin-top:20px;padding:12px;background:var(--surface);border-radius:8px;
+  border:1px solid var(--border);
+}
+.login-users p{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:500;}
+.user-chip{
+  display:inline-block;padding:3px 8px;background:var(--border);border-radius:4px;
+  font-size:11px;color:var(--dim);cursor:pointer;margin:2px;
+  font-family:'JetBrains Mono',monospace;transition:all .15s;
+}
+.user-chip:hover{background:var(--border-h);color:var(--text);}
+.shield-note{
+  display:flex;align-items:center;gap:6px;margin-top:16px;
+  font-size:11px;color:var(--muted);
+}
+
+/* ── APP SHELL ── */
+#appPage{display:none;height:100vh;flex-direction:row;}
+#appPage.show{display:flex;}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:260px;flex-shrink:0;background:var(--surface);
+  border-right:1px solid var(--border);display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.sidebar-logo{
+  display:flex;align-items:center;gap:10px;padding:16px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.sidebar-mark{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--blue-dark),var(--purple));
+  display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;
+}
+.sidebar-brand{font-size:14px;font-weight:700;}
+.sidebar-brand span{display:block;font-size:10px;color:var(--muted);font-weight:400;letter-spacing:.5px;}
+.new-chat-btn{
+  margin:12px;padding:9px 14px;background:var(--card);
+  border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-size:13px;font-weight:500;cursor:pointer;
+  display:flex;align-items:center;gap:8px;transition:all .2s;flex-shrink:0;
+}
+.new-chat-btn:hover{border-color:var(--border-h);background:#1a2332;}
+.new-chat-btn .plus{
+  width:20px;height:20px;border-radius:5px;background:var(--blue);
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:300;
+}
+.conv-section{flex:1;overflow-y:auto;padding:4px 8px;}
+.conv-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;padding:8px 8px 4px;}
+.conv-item{
+  padding:9px 10px;border-radius:7px;cursor:pointer;
+  transition:background .15s;margin-bottom:1px;
+  display:flex;flex-direction:column;gap:2px;
+}
+.conv-item:hover{background:var(--card);}
+.conv-item.active{background:var(--card);border:1px solid var(--border);}
+.conv-name{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.conv-meta{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.conv-threat{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:600;}
+.conv-threat.has{background:rgba(239,68,68,.15);color:var(--red);}
+.conv-threat.clean{background:rgba(34,197,94,.1);color:var(--green);}
+.sidebar-bottom{border-top:1px solid var(--border);padding:12px;flex-shrink:0;}
+.service-status{margin-bottom:12px;}
+.ss-title{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px;}
+.ss-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.ss-name{font-size:11px;color:var(--muted);}
+.ss-dot{width:6px;height:6px;border-radius:50%;background:var(--dim);}
+.ss-dot.online{background:var(--green);box-shadow:0 0 5px var(--green);}
+.user-row{
+  display:flex;align-items:center;gap:9px;padding:8px;
+  background:var(--card);border-radius:8px;border:1px solid var(--border);cursor:pointer;
+  transition:border-color .2s;
+}
+.user-row:hover{border-color:var(--border-h);}
+.user-avatar{
+  width:30px;height:30px;border-radius:8px;
+  background:linear-gradient(135deg,#1d4ed8,#7c3aed);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;flex-shrink:0;
+}
+.user-name{font-size:13px;font-weight:500;flex:1;}
+.user-role{font-size:10px;color:var(--muted);}
+.logout-btn{font-size:11px;color:var(--muted);cursor:pointer;padding:2px;}
+.logout-btn:hover{color:var(--red);}
+
+/* ── CHAT MAIN ── */
+.chat-main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+.chat-header{
+  display:flex;align-items:center;gap:12px;padding:14px 20px;
+  border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;
+}
+.chat-header-title{font-size:15px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mode-select{
+  padding:6px 10px;background:var(--card);border:1px solid var(--border);
+  border-radius:6px;color:var(--text);font-size:12px;cursor:pointer;
+  transition:border-color .2s;
+}
+.mode-select:focus{outline:none;border-color:var(--blue);}
+.header-badge{
+  display:flex;align-items:center;gap:5px;padding:5px 10px;
+  background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);
+  border-radius:6px;font-size:11px;color:var(--green);font-weight:500;
+}
+.header-badge .dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Messages */
+.messages-area{flex:1;overflow-y:auto;padding:24px 0;scroll-behavior:smooth;}
+.messages-inner{max-width:720px;margin:0 auto;padding:0 20px;}
+
+.welcome-msg{
+  text-align:center;padding:48px 24px;
+  color:var(--muted);
+}
+.welcome-msg .wicon{font-size:48px;margin-bottom:16px;}
+.welcome-msg h2{font-size:20px;font-weight:600;color:var(--text);margin-bottom:8px;}
+.welcome-msg p{font-size:13px;line-height:1.6;}
+.welcome-suggestions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:20px;}
+.suggestion{
+  padding:8px 16px;background:var(--card);border:1px solid var(--border);
+  border-radius:8px;font-size:12px;color:var(--muted);cursor:pointer;
+  transition:all .2s;
+}
+.suggestion:hover{border-color:var(--border-h);color:var(--text);}
+
+.msg-row{display:flex;gap:12px;margin-bottom:20px;animation:msgIn .25s cubic-bezier(.4,0,.2,1);}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.msg-row.user{flex-direction:row-reverse;}
+
+.msg-avatar{
+  width:32px;height:32px;border-radius:9px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+  margin-top:2px;
+}
+.msg-row.user .msg-avatar{background:linear-gradient(135deg,#1d4ed8,#7c3aed);}
+.msg-row.ai .msg-avatar{background:var(--card);border:1px solid var(--border);}
+.msg-row.blocked .msg-avatar{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);}
+
+.msg-bubble{max-width:560px;flex:1;}
+.msg-name{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+.msg-time{font-size:10px;color:var(--dim);font-family:'JetBrains Mono',monospace;font-weight:400;}
+
+.bubble{
+  padding:12px 16px;border-radius:12px;line-height:1.65;font-size:14px;
+}
+.msg-row.user .bubble{
+  background:var(--blue);color:#fff;
+  border-radius:12px 2px 12px 12px;
+}
+.msg-row.ai .bubble{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:2px 12px 12px 12px;
+}
+.msg-row.ai .bubble.typing{padding:14px 18px;}
+.dot-typing{display:flex;gap:5px;align-items:center;}
+.dot-typing span{
+  width:7px;height:7px;border-radius:50%;background:var(--muted);
+  animation:dotBounce 1.2s infinite;
+}
+.dot-typing span:nth-child(2){animation-delay:.2s;}
+.dot-typing span:nth-child(3){animation-delay:.4s;}
+@keyframes dotBounce{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-4px);opacity:1}}
+
+/* Shield badge on AI messages */
+.shield-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;color:var(--green);margin-top:8px;
+  opacity:.7;
+}
+
+/* Blocked message */
+.msg-row.blocked .bubble{
+  background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.3);
+  border-radius:2px 12px 12px 12px;
+}
+.threat-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.threat-label{
+  font-size:11px;font-weight:700;padding:3px 9px;border-radius:4px;letter-spacing:.3px;
+}
+.threat-label.PROMPT_INJECTION{background:rgba(249,115,22,.2);color:#f97316;}
+.threat-label.JAILBREAK{background:rgba(239,68,68,.2);color:var(--red);}
+.threat-label.SENSITIVE_EXTRACTION{background:rgba(139,92,246,.2);color:var(--purple);}
+.threat-conf{font-size:11px;color:var(--muted);}
+.threat-reason{font-size:13px;color:var(--muted);line-height:1.6;}
+.threat-blocked-text{
+  font-size:12px;font-weight:600;color:var(--red);margin-bottom:6px;
+  display:flex;align-items:center;gap:6px;
+}
+.threat-patterns{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+.tpat{
+  font-size:10px;padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono',monospace;
+  background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.2);color:var(--purple);
+}
+
+/* Input area */
+.input-area{
+  padding:16px 20px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;
+}
+.input-inner{max-width:720px;margin:0 auto;}
+.input-wrap{
+  display:flex;align-items:flex-end;gap:10px;
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:10px 12px;transition:border-color .2s;
+}
+.input-wrap:focus-within{border-color:var(--blue-dark);}
+#chatInput{
+  flex:1;background:transparent;border:none;color:var(--text);
+  font-size:14px;font-family:'Inter',sans-serif;resize:none;
+  min-height:24px;max-height:160px;line-height:1.5;
+  overflow-y:auto;
+}
+#chatInput:focus{outline:none;}
+#chatInput::placeholder{color:var(--dim);}
+.send-btn{
+  width:34px;height:34px;border-radius:8px;border:none;cursor:pointer;
+  background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .2s;font-size:16px;
+}
+.send-btn:hover{background:var(--blue-dark);}
+.send-btn:disabled{background:var(--border);cursor:default;}
+.input-meta{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:8px;font-size:11px;color:var(--dim);
+}
+.cerebus-protect{display:flex;align-items:center;gap:4px;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="loginPage">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-mark">🛡</div>
+      <div class="login-brand">CEREBUS AI<span>Secure LLM Gateway</span></div>
+    </div>
+    <div class="login-title">Welcome back</div>
+    <div class="login-sub">Sign in to access the AI assistant.<br/>All conversations are protected by Cerebus.</div>
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="Enter username" autocomplete="username"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="loginErr">Invalid username or password.</div>
+    <div class="login-users">
+      <p>Demo accounts — click to fill:</p>
+      <span class="user-chip" onclick="fillLogin('admin','cerebus2026')">admin / cerebus2026</span>
+      <span class="user-chip" onclick="fillLogin('alice','demo123')">alice / demo123</span>
+      <span class="user-chip" onclick="fillLogin('bob','pass123')">bob / pass123</span>
+    </div>
+    <div class="shield-note">🛡 Protected by Cerebus Dual Guardrail</div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="appPage">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-mark">🛡</div>
+      <div class="sidebar-brand">CEREBUS AI<span>Secure Chat</span></div>
+    </div>
+
+    <button class="new-chat-btn" onclick="newConversation()">
+      <div class="plus">+</div>
+      New conversation
+    </button>
+
+    <div class="conv-section">
+      <div class="conv-label">Recent</div>
+      <div id="convList"></div>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="service-status">
+        <div class="ss-title">Services</div>
+        <div class="ss-row"><span class="ss-name">Input Guardrail</span><div class="ss-dot" id="s1"></div></div>
+        <div class="ss-row"><span class="ss-name">Output Guardrail</span><div class="ss-dot" id="s2"></div></div>
+        <div class="ss-row"><span class="ss-name">Core LLM</span><div class="ss-dot" id="s3"></div></div>
+      </div>
+      <div class="user-row" id="userRow">
+        <div class="user-avatar" id="userAvatar"></div>
+        <div>
+          <div class="user-name" id="userName"></div>
+          <div class="user-role">Authenticated user</div>
+        </div>
+        <div class="logout-btn" onclick="logout()" title="Sign out">⎋</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Chat main -->
+  <main class="chat-main">
+    <div class="chat-header">
+      <div class="chat-header-title" id="chatTitle">New Conversation</div>
+      <select class="mode-select" id="secMode">
+        <option value="normal">🔵 Normal</option>
+        <option value="strict">🟡 Strict</option>
+        <option value="paranoid">🔴 Paranoid</option>
+      </select>
+      <div class="header-badge"><div class="dot"></div>Cerebus Active</div>
+    </div>
+
+    <div class="messages-area" id="messagesArea">
+      <div class="messages-inner" id="messagesInner">
+        <div class="welcome-msg" id="welcomeMsg">
+          <div class="wicon">🛡</div>
+          <h2>Cerebus AI Assistant</h2>
+          <p>Your conversations are protected by a dual-layer AI guardrail.<br/>Every message is scanned for threats before reaching the AI.</p>
+          <div class="welcome-suggestions">
+            <div class="suggestion" onclick="quickSend('What is machine learning?')">What is machine learning?</div>
+            <div class="suggestion" onclick="quickSend('Explain how neural networks work')">How do neural networks work?</div>
+            <div class="suggestion" onclick="quickSend('What is the difference between AI and ML?')">AI vs ML?</div>
+            <div class="suggestion" onclick="quickSend('How does RAG work?')">How does RAG work?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-inner">
+        <div class="input-wrap">
+          <textarea id="chatInput" rows="1" placeholder="Message Cerebus AI…" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">↑</button>
+        </div>
+        <div class="input-meta">
+          <div class="cerebus-protect">🛡 All messages scanned by Cerebus guardrail</div>
+          <span id="inputCount" style="color:var(--dim)"></span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../config.js"></script>
+<script>
+// ── USERS ──────────────────────────────────────────
+const USERS = { admin:'cerebus2026', alice:'demo123', bob:'pass123' };
+const API = (window.CEREBUS_CONFIG && window.CEREBUS_CONFIG.API) || 'http://localhost:8000';
+let currentUser = null, currentConvId = null, conversations = {}, sending = false;
+
+// ── AUTH ──────────────────────────────────────────
+function fillLogin(u,p){ document.getElementById('loginUser').value=u; document.getElementById('loginPass').value=p; }
+
+function doLogin() {
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value;
+  if(USERS[u]===p) {
+    currentUser=u;
+    localStorage.setItem('cerebus_user',u);
+    document.getElementById('loginPage').style.display='none';
+    document.getElementById('appPage').classList.add('show');
+    initApp();
+  } else {
+    document.getElementById('loginErr').style.display='block';
+    setTimeout(()=>document.getElementById('loginErr').style.display='none',3000);
+  }
+}
+
+document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+
+function logout() {
+  localStorage.removeItem('cerebus_user');
+  currentUser=null;
+  document.getElementById('appPage').classList.remove('show');
+  document.getElementById('loginPage').style.display='flex';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+}
+
+// ── INIT ──────────────────────────────────────────
+function initApp() {
+  const u=currentUser;
+  document.getElementById('userAvatar').textContent=u[0].toUpperCase();
+  document.getElementById('userName').textContent=u;
+  conversations = JSON.parse(localStorage.getItem('cerebus_convs_'+u)||'{}');
+  renderConvList();
+  checkServices();
+  setInterval(checkServices,15000);
+  const ids=Object.keys(conversations);
+  if(ids.length>0) loadConversation(ids[0]);
+  else newConversation();
+}
+
+// Auto-login if remembered
+window.addEventListener('load',()=>{
+  const saved=localStorage.getItem('cerebus_user');
+  if(saved&&USERS[saved]!==undefined){
+    currentUser=saved;
+    document.getElementById('loginPage').style.display='none';
+    document.getElementById('appPage').classList.add('show');
+    initApp();
+  }
+});
+
+// ── CONVERSATIONS ─────────────────────────────────
+function newConversation() {
+  const id='conv_'+Date.now();
+  conversations[id]={id,title:'New Conversation',messages:[],threats:0,created:new Date().toISOString()};
+  saveConvs(); renderConvList(); loadConversation(id);
+}
+
+function loadConversation(id) {
+  currentConvId=id;
+  const conv=conversations[id];
+  document.getElementById('chatTitle').textContent=conv.title;
+  document.querySelectorAll('.conv-item').forEach(el=>el.classList.toggle('active',el.dataset.id===id));
+  const inner=document.getElementById('messagesInner');
+  if(!conv.messages.length){
+    inner.innerHTML=`<div class="welcome-msg" id="welcomeMsg">
+      <div class="wicon">🛡</div><h2>Cerebus AI Assistant</h2>
+      <p>Your conversations are protected by a dual-layer AI guardrail.<br/>Every message is scanned for threats before reaching the AI.</p>
+      <div class="welcome-suggestions">
+        <div class="suggestion" onclick="quickSend('What is machine learning?')">What is machine learning?</div>
+        <div class="suggestion" onclick="quickSend('Explain how neural networks work')">How do neural networks work?</div>
+        <div class="suggestion" onclick="quickSend('What is the difference between AI and ML?')">AI vs ML?</div>
+        <div class="suggestion" onclick="quickSend('How does RAG work?')">How does RAG work?</div>
+      </div></div>`;
+    return;
+  }
+  inner.innerHTML='';
+  conv.messages.forEach(m=>renderMessage(m,false));
+  scrollBottom();
+}
+
+function saveConvs(){ localStorage.setItem('cerebus_convs_'+currentUser, JSON.stringify(conversations)); }
+
+function renderConvList(){
+  const list=document.getElementById('convList');
+  const ids=Object.keys(conversations).sort((a,b)=>new Date(conversations[b].created)-new Date(conversations[a].created));
+  if(!ids.length){list.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px 8px;">No conversations yet</div>';return;}
+  list.innerHTML=ids.map(id=>{
+    const c=conversations[id];
+    const d=new Date(c.created);
+    const timeStr=formatDate(d);
+    return `<div class="conv-item${currentConvId===id?' active':''}" data-id="${id}" onclick="loadConversation('${id}')">
+      <div class="conv-name">${escHtml(c.title)}</div>
+      <div class="conv-meta">
+        <span>${timeStr}</span>
+        ${c.threats>0?`<span class="conv-threat has">⚠ ${c.threats} threat${c.threats>1?'s':''}</span>`:'<span class="conv-threat clean">✓ Clean</span>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── SEND ──────────────────────────────────────────
+function handleKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
+}
+
+function autoResize(el){
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,160)+'px';
+  document.getElementById('inputCount').textContent=el.value.length>0?el.value.length+' chars':'';
+}
+
+function quickSend(text){
+  document.getElementById('chatInput').value=text;
+  sendMessage();
+}
+
+async function sendMessage(){
+  if(sending) return;
+  const input=document.getElementById('chatInput');
+  const text=input.value.trim();
+  if(!text||!currentConvId) return;
+  const mode=document.getElementById('secMode').value;
+  const conv=conversations[currentConvId];
+
+  // Hide welcome
+  const wm=document.getElementById('welcomeMsg');
+  if(wm) wm.remove();
+
+  // Auto-title from first message
+  if(conv.messages.length===0){
+    conv.title=text.slice(0,42)+(text.length>42?'…':'');
+    document.getElementById('chatTitle').textContent=conv.title;
+  }
+
+  // Add user message
+  const userMsg={role:'user',content:text,timestamp:new Date().toISOString()};
+  conv.messages.push(userMsg);
+  renderMessage(userMsg,true);
+  saveConvs(); renderConvList();
+
+  input.value=''; input.style.height='auto';
+  document.getElementById('inputCount').textContent='';
+
+  // Typing indicator
+  const typingId='typing_'+Date.now();
+  const inner=document.getElementById('messagesInner');
+  inner.insertAdjacentHTML('beforeend',`
+    <div class="msg-row ai" id="${typingId}">
+      <div class="msg-avatar">🛡</div>
+      <div class="msg-bubble">
+        <div class="msg-name">Cerebus AI <span class="msg-time">${fmtTime(new Date())}</span></div>
+        <div class="bubble typing"><div class="dot-typing"><span></span><span></span><span></span></div></div>
+      </div>
+    </div>`);
+  scrollBottom();
+  sending=true;
+  document.getElementById('sendBtn').disabled=true;
+
+  try {
+    const sessionId=currentUser+'_'+currentConvId;
+    const r=await fetch(`${API}/chat`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt:text,session_id:sessionId,security_mode:mode})});
+    const d=await r.json();
+    document.getElementById(typingId)?.remove();
+
+    if(d.blocked){
+      conv.threats=(conv.threats||0)+1;
+      const ex=d.explanation||{};
+      const blockedMsg={role:'blocked',content:d.response,timestamp:new Date().toISOString(),explanation:ex};
+      conv.messages.push(blockedMsg);
+      renderMessage(blockedMsg,true);
+    } else {
+      const aiMsg={role:'ai',content:d.response,timestamp:new Date().toISOString()};
+      conv.messages.push(aiMsg);
+      renderMessage(aiMsg,true);
+    }
+    saveConvs(); renderConvList();
+  } catch(e){
+    document.getElementById(typingId)?.remove();
+    inner.insertAdjacentHTML('beforeend',`
+      <div class="msg-row ai">
+        <div class="msg-avatar">🛡</div>
+        <div class="msg-bubble">
+          <div class="msg-name">System</div>
+          <div class="bubble" style="color:var(--red)">Could not reach Cerebus. Is the orchestrator running?</div>
+        </div>
+      </div>`);
+  }
+  sending=false;
+  document.getElementById('sendBtn').disabled=false;
+  scrollBottom();
+}
+
+// ── RENDER MESSAGE ────────────────────────────────
+function renderMessage(msg, animate=true){
+  const inner=document.getElementById('messagesInner');
+  const t=fmtTime(new Date(msg.timestamp));
+  let html='';
+
+  if(msg.role==='user'){
+    html=`<div class="msg-row user" ${animate?'':'style="animation:none"'}>
+      <div class="msg-avatar">${currentUser[0].toUpperCase()}</div>
+      <div class="msg-bubble">
+        <div class="msg-name" style="text-align:right">${escHtml(currentUser)} <span class="msg-time">${t}</span></div>
+        <div class="bubble">${escHtml(msg.content)}</div>
+      </div>
+    </div>`;
+  } else if(msg.role==='ai'){
+    html=`<div class="msg-row ai" ${animate?'':'style="animation:none"'}>
+      <div class="msg-avatar">🛡</div>
+      <div class="msg-bubble">
+        <div class="msg-name">Cerebus AI <span class="msg-time">${t}</span></div>
+        <div class="bubble">${escHtml(msg.content)}
+          <div class="shield-badge">🛡 Cerebus verified</div>
+        </div>
+      </div>
+    </div>`;
+  } else if(msg.role==='blocked'){
+    const ex=msg.explanation||{};
+    const conf=Math.round((ex.confidence||0)*100);
+    const patterns=(ex.triggered_patterns||[]).map(p=>`<span class="tpat">${escHtml(p.slice(0,50))}</span>`).join('');
+    html=`<div class="msg-row blocked" ${animate?'':'style="animation:none"'}>
+      <div class="msg-avatar">⚠️</div>
+      <div class="msg-bubble">
+        <div class="msg-name">Cerebus Guardrail <span class="msg-time">${t}</span></div>
+        <div class="bubble">
+          <div class="threat-blocked-text">🚫 Message Blocked</div>
+          <div class="threat-header">
+            <span class="threat-label ${ex.label||''}">${(ex.label||'THREAT').replace(/_/g,' ')}</span>
+            <span class="threat-conf">Confidence: ${conf}%</span>
+          </div>
+          <div class="threat-reason">${escHtml(ex.reason||'Blocked by security policy.')}</div>
+          ${patterns?`<div class="threat-patterns">${patterns}</div>`:''}
+        </div>
+      </div>
+    </div>`;
+  }
+  inner.insertAdjacentHTML('beforeend',html);
+}
+
+// ── SERVICES ──────────────────────────────────────
+async function checkServices(){
+  const endpoints=[
+    ['http://localhost:8001/health','s1'],
+    ['http://localhost:8002/health','s2'],
+    ['http://localhost:8003/health','s3'],
+  ];
+  for(const [url,id] of endpoints){
+    try{
+      const r=await fetch(url,{signal:AbortSignal.timeout(3000)});
+      document.getElementById(id).className=r.ok?'ss-dot online':'ss-dot';
+    }catch{ document.getElementById(id).className='ss-dot'; }
+  }
+}
+
+// ── UTILS ─────────────────────────────────────────
+function scrollBottom(){ const a=document.getElementById('messagesArea'); a.scrollTop=a.scrollHeight; }
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtTime(d){ return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
+function formatDate(d){
+  const now=new Date();
+  if(d.toDateString()===now.toDateString()) return fmtTime(d);
+  return d.toLocaleDateString([],{month:'short',day:'numeric'});
+}
+</script>
+</body>
+</html>
