@@ -1,3 +1,6 @@
+# Claude Code
+.claude/
+
 # Virtual environments
 cerebus_env/
 venv/
