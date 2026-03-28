@@ -1,0 +1,21 @@
+{
+  "PROMPT_INJECTION": [],
+  "JAILBREAK": [],
+  "SENSITIVE_EXTRACTION": [
+    "\\btraining.{0,15}data.{0,15}api\\b",
+    "\\bsystem.{0,15}instructions.{0,15}training\\b",
+    "\\bsystem.{0,15}prompt.{0,15}instructions\\b"
+  ],
+  "HARMFUL_CONTENT": [
+    "\\bassassinate\\b",
+    "\\bslaughter\\b",
+    "\\bstrangle\\b",
+    "\\bkill.{0,15}dude\\b"
+  ],
+  "meta": {
+    "total_learned": 7,
+    "last_updated": "2026-03-28T22:27:30.334943",
+    "retrain_count": 0,
+    "threat_vectors_computed": false
+  }
+}

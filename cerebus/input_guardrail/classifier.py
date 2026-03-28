@@ -2,10 +2,51 @@
 Input Guardrail — DistilBERT + LoRA classifier with XAI explanations.
 Falls back to a keyword-pattern heuristic if model isn't loaded yet
 (useful during early dev before fine-tuning is done).
+
+Self-learning integration: loads patterns discovered by the Self-Learning
+Engine and boosts confidence using threat-direction cosine similarity
+(Heretic-inspired vector analysis).
 """
 import re
+import os
+import sys
+import json
+import threading
+import time
 from typing import Tuple, List
 from shared.schemas import ThreatLabel, GuardExplanation
+
+# ---------------------------------------------------------------------------
+# Learned patterns (from Self-Learning Engine) — hot-reloaded every 60s
+# ---------------------------------------------------------------------------
+
+LEARNED_FILE = os.path.join(os.path.dirname(__file__), "..", "self_learning", "learned_patterns.json")
+_learned_patterns: dict = {}
+_learned_lock = threading.Lock()
+
+def _load_learned_patterns():
+    global _learned_patterns
+    try:
+        if os.path.exists(LEARNED_FILE):
+            with open(LEARNED_FILE) as f:
+                data = json.load(f)
+            with _learned_lock:
+                _learned_patterns = {k: v for k, v in data.items() if k != "meta"}
+    except Exception:
+        pass
+
+def _reload_loop():
+    while True:
+        time.sleep(60)
+        _load_learned_patterns()
+
+_load_learned_patterns()
+threading.Thread(target=_reload_loop, daemon=True).start()
+
+
+def _get_learned_for_label(label: ThreatLabel) -> List[str]:
+    with _learned_lock:
+        return list(_learned_patterns.get(label.value, []))
 
 # ---------------------------------------------------------------------------
 # Pattern-based heuristic (dev fallback & XAI signal source)
@@ -124,11 +165,20 @@ PATTERNS = {
 
 
 def _pattern_scan(text: str) -> dict[ThreatLabel, List[str]]:
-    """Return dict of label → list of matched pattern strings."""
+    """Return dict of label → list of matched pattern strings (static + learned)."""
     hits: dict[ThreatLabel, List[str]] = {}
     lower = text.lower()
     for label, patterns in PATTERNS.items():
+        # Static patterns
         matched = [p for p in patterns if re.search(p, lower)]
+        # Learned patterns from Self-Learning Engine
+        learned = _get_learned_for_label(label)
+        for p in learned:
+            try:
+                if re.search(p, lower) and p not in matched:
+                    matched.append("[learned] " + p)
+            except re.error:
+                pass
         if matched:
             hits[label] = matched
     return hits
@@ -204,6 +254,37 @@ def _model_classify(text: str) -> Tuple[ThreatLabel, float, List[str]]:
 
 
 # ---------------------------------------------------------------------------
+# Threat vector similarity boost (Heretic-inspired)
+# ---------------------------------------------------------------------------
+
+def _vector_boost(text: str, label: ThreatLabel, confidence: float) -> Tuple[float, str]:
+    """
+    Query the Self-Learning Engine's threat centroids.
+    If the text is semantically very close to known attacks of this label,
+    boost the confidence score. This is the core Heretic concept applied
+    to detection: we suppress the refusal direction in Heretic; here we
+    AMPLIFY the detection confidence in the threat direction.
+    """
+    try:
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+        from self_learning.learner import get_threat_similarity
+        sims = get_threat_similarity(text)
+        if not sims:
+            return confidence, ""
+        best_label = max(sims, key=sims.get)
+        best_sim = sims.get(best_label, 0.0)
+        # If high similarity to any threat centroid, boost confidence
+        if best_sim >= 0.75:
+            boost = (best_sim - 0.75) * 0.4  # up to +0.1 boost
+            new_conf = min(confidence + boost, 0.99)
+            note = f" Threat-vector similarity {round(best_sim*100)}% to {best_label}."
+            return new_conf, note
+    except Exception:
+        pass
+    return confidence, ""
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
@@ -213,9 +294,17 @@ def classify(text: str) -> GuardExplanation:
     else:
         label, confidence, triggered = _heuristic_classify(text)
 
+    # Apply threat vector similarity boost from self-learning engine
+    confidence, vector_note = _vector_boost(text, label, confidence)
+
     reason = LABEL_REASONS[label]
     if triggered:
-        reason += f" Matched rules: {', '.join(triggered[:3])}."
+        reason += f" Matched rules: {', '.join(t for t in triggered[:3] if not t.startswith('[learned]'))}."
+    learned_hits = [t for t in triggered if t.startswith('[learned]')]
+    if learned_hits:
+        reason += f" Self-learned rules matched: {len(learned_hits)}."
+    if vector_note:
+        reason += vector_note
 
     return GuardExplanation(
         label=label,

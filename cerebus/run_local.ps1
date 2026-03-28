@@ -2,6 +2,9 @@ $BASE = Split-Path -Parent $MyInvocation.MyCommand.Path
 $env:PYTHONPATH = $BASE
 $PYTHON = "$BASE\cerebus_env\Scripts\python.exe"
 
+# Ensure self-learning dependency is installed
+& $PYTHON -m pip install sentence-transformers --quiet 2>$null
+
 Write-Host "==> Starting Input Guardrail (port 8001)..."
 $p1 = Start-Process powershell -ArgumentList "-NoExit", "-Command", "`$env:PYTHONPATH='$BASE'; cd '$BASE\input_guardrail'; & '$PYTHON' -m uvicorn main:app --host 0.0.0.0 --port 8001" -PassThru
 
@@ -13,6 +16,9 @@ $p3 = Start-Process powershell -ArgumentList "-NoExit", "-Command", "`$env:PYTHO
 
 Write-Host "==> Starting RAG Service (port 8004)..."
 $p5 = Start-Process powershell -ArgumentList "-NoExit", "-Command", "`$env:PYTHONPATH='$BASE'; cd '$BASE\rag'; & '$PYTHON' -m uvicorn main:app --host 0.0.0.0 --port 8004" -PassThru
+
+Write-Host "==> Starting Self-Learning Engine (port 8005)..."
+$p7 = Start-Process powershell -ArgumentList "-NoExit", "-Command", "`$env:PYTHONPATH='$BASE'; cd '$BASE\self_learning'; & '$PYTHON' -m uvicorn main:app --host 0.0.0.0 --port 8005" -PassThru
 
 Start-Sleep -Seconds 3
 

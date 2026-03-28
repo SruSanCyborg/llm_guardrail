@@ -74,16 +74,16 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
 .pill-ollama{background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.25);}
 .pill-groq{background:rgba(139,92,246,.12);color:#8b5cf6;border:1px solid rgba(139,92,246,.25);}
 
-/* ── LOGIN ── */
+/* ── LOGIN / SIGNUP ── */
 #loginPage{
   position:fixed;inset:0;background:var(--bg);
   display:flex;align-items:center;justify-content:center;z-index:100;
 }
 .login-card{
-  width:380px;background:var(--card);border:1px solid var(--border);
+  width:400px;background:var(--card);border:1px solid var(--border);
   border-radius:var(--radius);padding:36px;
 }
-.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:24px;}
 .login-mark{
   width:38px;height:38px;border-radius:10px;
   background:linear-gradient(135deg,var(--blue-dark),var(--purple));
@@ -91,8 +91,15 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
 }
 .login-brand{font-size:18px;font-weight:700;}
 .login-brand span{color:var(--muted);font-weight:400;font-size:13px;display:block;margin-top:1px;}
-.login-title{font-size:20px;font-weight:600;margin-bottom:6px;}
-.login-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.5;}
+
+/* Tabs */
+.auth-tabs{display:flex;gap:0;margin-bottom:24px;background:var(--surface);border-radius:8px;padding:3px;}
+.auth-tab{
+  flex:1;padding:8px;text-align:center;font-size:13px;font-weight:500;
+  border-radius:6px;cursor:pointer;color:var(--muted);transition:all .2s;border:none;background:transparent;
+}
+.auth-tab.active{background:var(--card);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.4);}
+
 .field{margin-bottom:14px;}
 .field label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:6px;letter-spacing:.3px;}
 .field input{
@@ -102,15 +109,18 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
   transition:border-color .2s;
 }
 .field input:focus{outline:none;border-color:var(--blue);}
+.field-hint{font-size:11px;color:var(--muted);margin-top:4px;}
 .login-btn{
   width:100%;padding:11px;background:var(--blue);border:none;border-radius:8px;
   color:#fff;font-size:14px;font-weight:600;cursor:pointer;
   transition:background .2s;margin-top:4px;letter-spacing:.2px;
 }
 .login-btn:hover{background:var(--blue-dark);}
-.login-err{font-size:12px;color:var(--red);margin-top:10px;display:none;}
+.auth-msg{font-size:12px;margin-top:10px;display:none;padding:8px 10px;border-radius:6px;}
+.auth-msg.error{color:var(--red);background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);}
+.auth-msg.success{color:var(--green);background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);}
 .login-users{
-  margin-top:20px;padding:12px;background:var(--surface);border-radius:8px;
+  margin-top:18px;padding:12px;background:var(--surface);border-radius:8px;
   border:1px solid var(--border);
 }
 .login-users p{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:500;}
@@ -124,6 +134,10 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
   display:flex;align-items:center;gap:6px;margin-top:16px;
   font-size:11px;color:var(--muted);
 }
+.strength-bar{height:3px;border-radius:2px;margin-top:5px;transition:all .3s;background:var(--border);}
+.strength-bar.weak{background:var(--red);width:33%;}
+.strength-bar.medium{background:var(--yellow);width:66%;}
+.strength-bar.strong{background:var(--green);width:100%;}
 
 /* ── APP SHELL ── */
 #appPage{display:none;height:100vh;flex-direction:row;}
@@ -281,6 +295,33 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
   opacity:.7;
 }
 
+/* ── MARKDOWN RENDERING ── */
+.md-bubble { line-height:1.7; }
+.md-bubble .md-p { margin:0 0 10px; }
+.md-bubble .md-p:last-child { margin-bottom:0; }
+.md-bubble .md-h1 { font-size:17px;font-weight:700;margin:14px 0 6px;color:var(--text); }
+.md-bubble .md-h2 { font-size:15px;font-weight:700;margin:12px 0 5px;color:var(--text); }
+.md-bubble .md-h3 { font-size:13px;font-weight:600;margin:10px 0 4px;color:var(--text); }
+.md-bubble .md-ul,
+.md-bubble .md-ol { margin:6px 0 10px 18px;padding:0; }
+.md-bubble li { margin-bottom:4px; }
+.md-bubble .md-code {
+  background:#0d1117;border:1px solid var(--border);border-radius:8px;
+  padding:12px 14px;margin:10px 0;overflow-x:auto;
+  font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6;color:#e2e8f0;
+}
+.md-bubble .md-inline {
+  background:rgba(255,255,255,.07);border:1px solid var(--border);
+  border-radius:4px;padding:1px 5px;font-family:'JetBrains Mono',monospace;font-size:12px;
+}
+.md-bubble strong { font-weight:600;color:var(--text); }
+.md-bubble em { font-style:italic;color:#cbd5e1; }
+.md-bubble .md-bq {
+  border-left:3px solid var(--blue);margin:8px 0;padding:6px 12px;
+  color:var(--muted);font-style:italic;
+}
+.md-bubble .md-hr { border:none;border-top:1px solid var(--border);margin:12px 0; }
+
 /* Blocked message */
 .msg-row.blocked .bubble{
   background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.3);
@@ -373,12 +414,6 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
     </div>
 
     <div id="groqSection" style="display:none;">
-      <div class="pm-groq-key">
-        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">
-          Groq API Key <a href="https://console.groq.com" target="_blank" style="color:var(--blue);text-decoration:none;">(get free key)</a>
-        </label>
-        <input type="password" id="groqKeyInput" placeholder="gsk_..." autocomplete="off"/>
-      </div>
       <div class="pm-model-row">
         <label>Groq model</label>
         <select id="groqModelSelect">
@@ -400,24 +435,57 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
       <div class="login-mark">🛡</div>
       <div class="login-brand">CEREBUS AI<span>Secure LLM Gateway</span></div>
     </div>
-    <div class="login-title">Welcome back</div>
-    <div class="login-sub">Sign in to access the AI assistant.<br/>All conversations are protected by Cerebus.</div>
-    <div class="field">
-      <label>Username</label>
-      <input type="text" id="loginUser" placeholder="Enter username" autocomplete="username"/>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabSignIn" onclick="switchTab('signin')">Sign In</button>
+      <button class="auth-tab" id="tabSignUp" onclick="switchTab('signup')">Create Account</button>
     </div>
-    <div class="field">
-      <label>Password</label>
-      <input type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password"/>
+
+    <!-- Sign In Panel -->
+    <div id="panelSignIn">
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="loginUser" placeholder="Enter username" autocomplete="username"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password"/>
+      </div>
+      <button class="login-btn" onclick="doLogin()">Sign In</button>
+      <div class="auth-msg error" id="loginErr">Invalid username or password.</div>
+      <div class="login-users">
+        <p>Demo accounts — click to fill:</p>
+        <span class="user-chip" onclick="fillLogin('admin','cerebus2026')">admin</span>
+        <span class="user-chip" onclick="fillLogin('alice','demo123')">alice</span>
+        <span class="user-chip" onclick="fillLogin('bob','pass123')">bob</span>
+      </div>
     </div>
-    <button class="login-btn" onclick="doLogin()">Sign In</button>
-    <div class="login-err" id="loginErr">Invalid username or password.</div>
-    <div class="login-users">
-      <p>Demo accounts — click to fill:</p>
-      <span class="user-chip" onclick="fillLogin('admin','cerebus2026')">admin / cerebus2026</span>
-      <span class="user-chip" onclick="fillLogin('alice','demo123')">alice / demo123</span>
-      <span class="user-chip" onclick="fillLogin('bob','pass123')">bob / pass123</span>
+
+    <!-- Sign Up Panel -->
+    <div id="panelSignUp" style="display:none;">
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="regUser" placeholder="Choose a username" autocomplete="off" oninput="checkUsername()"/>
+        <div class="field-hint" id="usernameHint"></div>
+      </div>
+      <div class="field">
+        <label>Display Name <span style="color:var(--dim);font-weight:400">(optional)</span></label>
+        <input type="text" id="regDisplay" placeholder="Your name"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="regPass" placeholder="Min 6 characters" oninput="checkStrength()"/>
+        <div class="strength-bar" id="strengthBar"></div>
+      </div>
+      <div class="field">
+        <label>Confirm Password</label>
+        <input type="password" id="regPass2" placeholder="Repeat password"/>
+      </div>
+      <button class="login-btn" onclick="doRegister()">Create Account</button>
+      <div class="auth-msg" id="regMsg"></div>
     </div>
+
     <div class="shield-note">🛡 Protected by Cerebus Dual Guardrail</div>
   </div>
 </div>
@@ -506,11 +574,91 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
 
 <script src="../config.js"></script>
 <script>
-// ── USERS ──────────────────────────────────────────
-const USERS = { admin:'cerebus2026', alice:'demo123', bob:'pass123' };
+// ── USER STORE (localStorage) ──────────────────────
 const API = (window.CEREBUS_CONFIG && window.CEREBUS_CONFIG.API) || 'http://localhost:8000';
 let currentUser = null, currentConvId = null, conversations = {}, sending = false;
 let selectedProvider = 'ollama', selectedModel = null;
+
+// Seed demo accounts if first run
+function getUsers() {
+  const stored = localStorage.getItem('cerebus_users');
+  if (stored) return JSON.parse(stored);
+  const defaults = { admin:{password:'cerebus2026',display:'Admin'}, alice:{password:'demo123',display:'Alice'}, bob:{password:'pass123',display:'Bob'} };
+  localStorage.setItem('cerebus_users', JSON.stringify(defaults));
+  return defaults;
+}
+function saveUsers(u) { localStorage.setItem('cerebus_users', JSON.stringify(u)); }
+
+// ── AUTH TABS ──────────────────────────────────────
+function switchTab(tab) {
+  const isSignIn = tab === 'signin';
+  document.getElementById('tabSignIn').classList.toggle('active', isSignIn);
+  document.getElementById('tabSignUp').classList.toggle('active', !isSignIn);
+  document.getElementById('panelSignIn').style.display = isSignIn ? 'block' : 'none';
+  document.getElementById('panelSignUp').style.display = isSignIn ? 'none' : 'block';
+  document.getElementById('loginErr').style.display = 'none';
+  document.getElementById('regMsg').style.display = 'none';
+}
+
+// ── USERNAME VALIDATION ────────────────────────────
+function checkUsername() {
+  const val = document.getElementById('regUser').value.trim();
+  const hint = document.getElementById('usernameHint');
+  if (!val) { hint.textContent = ''; return; }
+  if (!/^[a-z0-9_]{3,20}$/.test(val)) {
+    hint.style.color = 'var(--red)';
+    hint.textContent = 'Lowercase letters, numbers, _ only. 3–20 chars.';
+    return;
+  }
+  const users = getUsers();
+  if (users[val]) {
+    hint.style.color = 'var(--red)';
+    hint.textContent = 'Username already taken.';
+  } else {
+    hint.style.color = 'var(--green)';
+    hint.textContent = '✓ Available';
+  }
+}
+
+// ── PASSWORD STRENGTH ──────────────────────────────
+function checkStrength() {
+  const p = document.getElementById('regPass').value;
+  const bar = document.getElementById('strengthBar');
+  if (!p) { bar.className = 'strength-bar'; return; }
+  if (p.length < 6) { bar.className = 'strength-bar weak'; return; }
+  const strong = /[A-Z]/.test(p) && /[0-9]/.test(p) && p.length >= 8;
+  const medium = p.length >= 6;
+  bar.className = 'strength-bar ' + (strong ? 'strong' : medium ? 'medium' : 'weak');
+}
+
+// ── REGISTER ──────────────────────────────────────
+function doRegister() {
+  const username = document.getElementById('regUser').value.trim().toLowerCase();
+  const display  = document.getElementById('regDisplay').value.trim() || username;
+  const pass     = document.getElementById('regPass').value;
+  const pass2    = document.getElementById('regPass2').value;
+  const msg      = document.getElementById('regMsg');
+
+  function showMsg(text, type) {
+    msg.textContent = text;
+    msg.className = 'auth-msg ' + type;
+    msg.style.display = 'block';
+  }
+
+  if (!username) return showMsg('Please choose a username.', 'error');
+  if (!/^[a-z0-9_]{3,20}$/.test(username)) return showMsg('Username: lowercase letters, numbers, _ only. 3–20 chars.', 'error');
+  if (pass.length < 6) return showMsg('Password must be at least 6 characters.', 'error');
+  if (pass !== pass2) return showMsg('Passwords do not match.', 'error');
+
+  const users = getUsers();
+  if (users[username]) return showMsg('Username already taken. Choose another.', 'error');
+
+  users[username] = { password: pass, display };
+  saveUsers(users);
+
+  showMsg('Account created! Signing you in…', 'success');
+  setTimeout(() => enterApp(username), 800);
+}
 
 // ── PROVIDER MODAL ─────────────────────────────────
 function openProviderModal() {
@@ -527,10 +675,6 @@ function selectProvider(p) {
 
 function confirmProvider() {
   if (selectedProvider === 'groq') {
-    const key = document.getElementById('groqKeyInput').value.trim();
-    if (!key) { alert('Please enter your Groq API key.'); return; }
-    // Store key in sessionStorage (not localStorage for security)
-    sessionStorage.setItem('groq_api_key', key);
     selectedModel = document.getElementById('groqModelSelect').value;
   } else {
     selectedModel = document.getElementById('ollamaModelSelect').value;
@@ -552,41 +696,52 @@ function updateProviderPill() {
 }
 
 // ── AUTH ──────────────────────────────────────────
-function fillLogin(u,p){ document.getElementById('loginUser').value=u; document.getElementById('loginPass').value=p; }
+function fillLogin(u, p) {
+  document.getElementById('loginUser').value = u;
+  document.getElementById('loginPass').value = p;
+}
 
 function doLogin() {
-  const u=document.getElementById('loginUser').value.trim();
-  const p=document.getElementById('loginPass').value;
-  if(USERS[u]===p) {
-    currentUser=u;
-    localStorage.setItem('cerebus_user',u);
-    document.getElementById('loginPage').style.display='none';
-    document.getElementById('appPage').classList.add('show');
-    initApp();
-    // Show provider selection modal on first login
-    document.getElementById('providerModal').style.display='flex';
+  const u = document.getElementById('loginUser').value.trim().toLowerCase();
+  const p = document.getElementById('loginPass').value;
+  const users = getUsers();
+  const err = document.getElementById('loginErr');
+  if (users[u] && users[u].password === p) {
+    enterApp(u);
   } else {
-    document.getElementById('loginErr').style.display='block';
-    setTimeout(()=>document.getElementById('loginErr').style.display='none',3000);
+    err.style.display = 'block';
+    setTimeout(() => err.style.display = 'none', 3000);
   }
 }
 
-document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+function enterApp(username) {
+  currentUser = username;
+  localStorage.setItem('cerebus_user', username);
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('appPage').classList.add('show');
+  initApp();
+  document.getElementById('providerModal').style.display = 'flex';
+}
+
+document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
 function logout() {
   localStorage.removeItem('cerebus_user');
-  currentUser=null;
+  currentUser = null;
   document.getElementById('appPage').classList.remove('show');
-  document.getElementById('loginPage').style.display='flex';
-  document.getElementById('loginUser').value='';
-  document.getElementById('loginPass').value='';
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  switchTab('signin');
 }
 
 // ── INIT ──────────────────────────────────────────
 function initApp() {
-  const u=currentUser;
-  document.getElementById('userAvatar').textContent=u[0].toUpperCase();
-  document.getElementById('userName').textContent=u;
+  const u = currentUser;
+  const users = getUsers();
+  const display = users[u]?.display || u;
+  document.getElementById('userAvatar').textContent = display[0].toUpperCase();
+  document.getElementById('userName').textContent = display;
   conversations = JSON.parse(localStorage.getItem('cerebus_convs_'+u)||'{}');
   renderConvList();
   checkServices();
@@ -597,11 +752,11 @@ function initApp() {
 }
 
 // Auto-login if remembered
-window.addEventListener('load',()=>{
-  const saved=localStorage.getItem('cerebus_user');
-  if(saved&&USERS[saved]!==undefined){
-    currentUser=saved;
-    document.getElementById('loginPage').style.display='none';
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('cerebus_user');
+  if (saved && getUsers()[saved]) {
+    currentUser = saved;
+    document.getElementById('loginPage').style.display = 'none';
     document.getElementById('appPage').classList.add('show');
     initApp();
   }
@@ -717,8 +872,7 @@ async function sendMessage(){
 
   try {
     const sessionId=currentUser+'_'+currentConvId;
-    const groqKey = selectedProvider==='groq' ? (sessionStorage.getItem('groq_api_key')||undefined) : undefined;
-    const body={prompt:text,session_id:sessionId,security_mode:mode,provider:selectedProvider,model:selectedModel||undefined,groq_api_key:groqKey};
+    const body={prompt:text,session_id:sessionId,security_mode:mode,provider:selectedProvider,model:selectedModel||undefined};
     const r=await fetch(`${API}/chat`,{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify(body)});
     const d=await r.json();
@@ -771,7 +925,7 @@ function renderMessage(msg, animate=true){
       <div class="msg-avatar">🛡</div>
       <div class="msg-bubble">
         <div class="msg-name">Cerebus AI <span class="msg-time">${t}</span></div>
-        <div class="bubble">${escHtml(msg.content)}
+        <div class="bubble md-bubble">${renderMarkdown(msg.content)}
           <div class="shield-badge">🛡 Cerebus verified</div>
         </div>
       </div>
@@ -816,7 +970,62 @@ async function checkServices(){
 
 // ── UTILS ─────────────────────────────────────────
 function scrollBottom(){ const a=document.getElementById('messagesArea'); a.scrollTop=a.scrollHeight; }
-function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderMarkdown(text) {
+  let s = escHtml(text);
+
+  // Code blocks (``` ... ```)
+  s = s.replace(/```(\w*)\n?([\s\S]*?)```/g, (_,lang,code)=>
+    `<pre class="md-code"><code${lang?` class="lang-${escHtml(lang)}"`:''}>${code.trimEnd()}</code></pre>`);
+
+  // Inline code
+  s = s.replace(/`([^`]+)`/g, '<code class="md-inline">$1</code>');
+
+  // Bold **text** or __text__
+  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/__(.+?)__/g, '<strong>$1</strong>');
+
+  // Italic *text* or _text_
+  s = s.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+  s = s.replace(/_([^_\n]+)_/g, '<em>$1</em>');
+
+  // Headers ### ## #
+  s = s.replace(/^### (.+)$/gm, '<h3 class="md-h3">$1</h3>');
+  s = s.replace(/^## (.+)$/gm, '<h2 class="md-h2">$1</h2>');
+  s = s.replace(/^# (.+)$/gm, '<h1 class="md-h1">$1</h1>');
+
+  // Horizontal rule
+  s = s.replace(/^---+$/gm, '<hr class="md-hr"/>');
+
+  // Unordered lists (lines starting with - or *)
+  s = s.replace(/^[ \t]*[-*] (.+)$/gm, '<li>$1</li>');
+  s = s.replace(/(<li>[\s\S]*?<\/li>)(\n(?!<li>)|$)/g, '<ul class="md-ul">$1</ul>');
+  // Collapse consecutive uls into one
+  s = s.replace(/<\/ul>\s*<ul class="md-ul">/g, '');
+
+  // Ordered lists (lines starting with 1. 2. etc.)
+  s = s.replace(/^[ \t]*\d+\. (.+)$/gm, '<oli>$1</oli>');
+  s = s.replace(/(<oli>[\s\S]*?<\/oli>)(\n(?!<oli>)|$)/g, '<ol class="md-ol">$1</ol>');
+  s = s.replace(/<\/ol>\s*<ol class="md-ol">/g, '');
+  s = s.replace(/<oli>/g,'<li>').replace(/<\/oli>/g,'</li>');
+
+  // Blockquote
+  s = s.replace(/^&gt; (.+)$/gm, '<blockquote class="md-bq">$1</blockquote>');
+  s = s.replace(/<\/blockquote>\s*<blockquote class="md-bq">/g, '<br/>');
+
+  // Line breaks — double newline = paragraph break, single = <br>
+  s = s.replace(/\n\n+/g, '</p><p class="md-p">');
+  s = s.replace(/\n/g, '<br/>');
+  s = '<p class="md-p">' + s + '</p>';
+
+  // Clean up empty paragraphs and paragraphs wrapping block elements
+  s = s.replace(/<p class="md-p">(<(?:pre|ul|ol|h[1-3]|hr|blockquote)[^>]*>)/g, '$1');
+  s = s.replace(/(<\/(?:pre|ul|ol|h[1-3]|hr|blockquote)>)<\/p>/g, '$1');
+  s = s.replace(/<p class="md-p"><\/p>/g, '');
+
+  return s;
+}
 function fmtTime(d){ return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
 function formatDate(d){
   const now=new Date();
