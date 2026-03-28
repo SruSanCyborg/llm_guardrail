@@ -148,7 +148,13 @@ async def chat(req: ChatRequest):
     try:
         llm_resp = await http_client.post(
             f"{CORE_LLM_URL}/generate",
-            json={"prompt": req.prompt, "context": rag_context},
+            json={
+                "prompt": req.prompt,
+                "context": rag_context,
+                "provider": getattr(req, "provider", "ollama"),
+                "model": getattr(req, "model", None),
+                "groq_api_key": getattr(req, "groq_api_key", None),
+            },
         )
         llm_resp.raise_for_status()
         llm_response = llm_resp.json()["response"]

@@ -8,6 +8,7 @@ class ThreatLabel(str, Enum):
     PROMPT_INJECTION = "PROMPT_INJECTION"
     JAILBREAK = "JAILBREAK"
     SENSITIVE_EXTRACTION = "SENSITIVE_EXTRACTION"
+    HARMFUL_CONTENT = "HARMFUL_CONTENT"
 
 
 class GuardExplanation(BaseModel):
@@ -20,7 +21,10 @@ class GuardExplanation(BaseModel):
 class ChatRequest(BaseModel):
     prompt: str
     session_id: str
-    security_mode: str = "normal"  # "normal" | "strict" | "paranoid"
+    security_mode: str = "normal"   # "normal" | "strict" | "paranoid"
+    provider: str = "ollama"        # "ollama" | "groq"
+    model: Optional[str] = None     # override model name
+    groq_api_key: Optional[str] = None  # user-supplied Groq key (takes priority over .env)
 
 
 class ChatResponse(BaseModel):

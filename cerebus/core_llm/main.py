@@ -1,8 +1,8 @@
 """
-Core LLM Service — Ollama wrapper, runs on port 8003.
+Core LLM Service — Ollama + Groq, runs on port 8003.
 
-POST /generate  →  {"prompt": str, "context": str}  →  {"response": str}
-GET  /health    →  {"status": "ok", "model": <model>}
+POST /generate  →  {"prompt", "context", "provider", "model"}  →  {"response"}
+GET  /health    →  {"status", "providers"}
 """
 import os, sys
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -10,66 +10,147 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import httpx
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from typing import Optional
 
-from shared.config import OLLAMA_BASE_URL, OLLAMA_MODEL
+from shared.config import OLLAMA_BASE_URL, OLLAMA_MODEL, GROQ_API_KEY, GROQ_MODEL
 
-app = FastAPI(title="Cerebus Core LLM (Ollama)")
+app = FastAPI(title="Cerebus Core LLM")
 
-OLLAMA_GENERATE_URL = f"{OLLAMA_BASE_URL}/api/generate"
-OLLAMA_TAGS_URL = f"{OLLAMA_BASE_URL}/api/tags"
+OLLAMA_CHAT_URL  = f"{OLLAMA_BASE_URL}/api/chat"
+OLLAMA_TAGS_URL  = f"{OLLAMA_BASE_URL}/api/tags"
+GROQ_CHAT_URL    = "https://api.groq.com/openai/v1/chat/completions"
+
+GROQ_MODELS = [
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "mixtral-8x7b-32768",
+    "gemma2-9b-it",
+]
+
+SYSTEM_PROMPT = """You are Cerebus, an intelligent AI assistant protected by a dual-layer security guardrail system.
+
+Guidelines:
+- Answer clearly, thoroughly, and in a well-structured way.
+- Use bullet points, numbered lists, or code blocks when they make the answer clearer.
+- If asked about a technical topic, explain it at the right depth — don't oversimplify.
+- If you don't know something, say so honestly rather than guessing.
+- Keep responses focused and useful. Avoid unnecessary filler or repetition.
+- When relevant context is provided below, prioritize it in your answer."""
 
 
 class GenerateRequest(BaseModel):
     prompt: str
-    context: str = ""  # RAG-injected context
+    context: str = ""
+    provider: str = "ollama"           # "ollama" | "groq"
+    model: Optional[str] = None        # override default model
+    groq_api_key: Optional[str] = None # user-supplied key overrides .env
 
 
 class GenerateResponse(BaseModel):
     response: str
+    provider: str
+    model_used: str
 
 
-def _build_prompt(prompt: str, context: str) -> str:
+def _messages(prompt: str, context: str) -> list:
+    system = SYSTEM_PROMPT
     if context:
-        return (
-            f"You are a helpful assistant. Use the following context to answer accurately.\n\n"
-            f"Context:\n{context}\n\n"
-            f"User: {prompt}\nAssistant:"
-        )
-    return f"You are a helpful assistant.\n\nUser: {prompt}\nAssistant:"
+        system += f"\n\nRelevant context:\n{context}"
+    return [
+        {"role": "system", "content": system},
+        {"role": "user",   "content": prompt},
+    ]
 
+
+# ── Ollama ──────────────────────────────────────────────────────────────────
+
+async def _ollama_generate(prompt: str, context: str, model: str) -> str:
+    payload = {
+        "model": model,
+        "messages": _messages(prompt, context),
+        "stream": False,
+        "options": {
+            "temperature": 0.7,
+            "num_predict": 1024,
+            "top_p": 0.9,
+            "repeat_penalty": 1.1,
+        },
+    }
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        try:
+            r = await client.post(OLLAMA_CHAT_URL, json=payload)
+            r.raise_for_status()
+            return r.json().get("message", {}).get("content", "").strip()
+        except httpx.ConnectError:
+            raise HTTPException(status_code=503, detail="Ollama is not running. Start it with: ollama serve")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── Groq ────────────────────────────────────────────────────────────────────
+
+async def _groq_generate(prompt: str, context: str, model: str, api_key: str = None) -> str:
+    key = api_key or GROQ_API_KEY
+    if not key or key == "your_groq_api_key_here":
+        raise HTTPException(status_code=503, detail="Groq API key not configured. Add GROQ_API_KEY to .env or enter it in the chat UI.")
+    headers = {
+        "Authorization": f"Bearer {key}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": model,
+        "messages": _messages(prompt, context),
+        "temperature": 0.7,
+        "max_tokens": 1024,
+        "top_p": 0.9,
+    }
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        try:
+            r = await client.post(GROQ_CHAT_URL, headers=headers, json=payload)
+            r.raise_for_status()
+            return r.json()["choices"][0]["message"]["content"].strip()
+        except httpx.ConnectError:
+            raise HTTPException(status_code=503, detail="Could not reach Groq API.")
+        except httpx.HTTPStatusError as e:
+            detail = e.response.json().get("error", {}).get("message", str(e))
+            raise HTTPException(status_code=502, detail=f"Groq error: {detail}")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── Routes ───────────────────────────────────────────────────────────────────
 
 @app.get("/health")
 async def health():
+    result = {"status": "ok", "providers": {}}
+
+    # Check Ollama
     async with httpx.AsyncClient(timeout=5.0) as client:
         try:
             r = await client.get(OLLAMA_TAGS_URL)
             models = [m["name"] for m in r.json().get("models", [])]
-            return {"status": "ok", "ollama": "reachable", "available_models": models, "active_model": OLLAMA_MODEL}
+            result["providers"]["ollama"] = {"status": "reachable", "models": models, "default": OLLAMA_MODEL}
         except Exception:
-            return {"status": "degraded", "ollama": "unreachable", "active_model": OLLAMA_MODEL}
+            result["providers"]["ollama"] = {"status": "unreachable", "default": OLLAMA_MODEL}
+
+    # Check Groq (just validate key is set)
+    if GROQ_API_KEY and GROQ_API_KEY != "your_groq_api_key_here":
+        result["providers"]["groq"] = {"status": "configured", "models": GROQ_MODELS, "default": GROQ_MODEL}
+    else:
+        result["providers"]["groq"] = {"status": "not_configured", "models": GROQ_MODELS}
+
+    return result
 
 
 @app.post("/generate", response_model=GenerateResponse)
 async def generate(req: GenerateRequest):
-    full_prompt = _build_prompt(req.prompt, req.context)
+    provider = req.provider.lower()
 
-    payload = {
-        "model": OLLAMA_MODEL,
-        "prompt": full_prompt,
-        "stream": False,
-        "options": {"temperature": 0.7, "num_predict": 512},
-    }
+    if provider == "groq":
+        model = req.model or GROQ_MODEL
+        text = await _groq_generate(req.prompt, req.context, model, api_key=req.groq_api_key)
+    else:
+        model = req.model or OLLAMA_MODEL
+        text = await _ollama_generate(req.prompt, req.context, model)
 
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        try:
-            r = await client.post(OLLAMA_GENERATE_URL, json=payload)
-            r.raise_for_status()
-            data = r.json()
-            return GenerateResponse(response=data.get("response", "").strip())
-        except httpx.ConnectError:
-            raise HTTPException(
-                status_code=503,
-                detail="Ollama is not running. Start it with: ollama serve"
-            )
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+    return GenerateResponse(response=text, provider=provider, model_used=model)

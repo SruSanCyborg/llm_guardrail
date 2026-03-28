@@ -17,6 +17,10 @@ env/
 *.so
 *.pyd
 
+# Runtime / generated
+*.db
+*.sqlite
+
 # OS
 .DS_Store
 Thumbs.db
