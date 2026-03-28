@@ -17,6 +17,10 @@ env/
 *.so
 *.pyd
 
+# Environment variables
+.env
+*.env
+
 # Runtime / generated
 *.db
 *.sqlite
